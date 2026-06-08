@@ -72,7 +72,7 @@ body{
 .btn-sm:hover{border-color:var(--gold);color:var(--gold)}
 .btn-sm.primary{background:var(--gold);color:#111;border-color:var(--gold);font-weight:700}
 .btn-sm.primary:hover{background:#e8c060;color:#111}
-.shows-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:9px}
+.recitales-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:9px}
 .show-card{
   background:var(--bg3);border:2px solid var(--border);border-radius:var(--radius);
   padding:11px 13px;cursor:pointer;transition:all .2s;position:relative;
@@ -248,20 +248,26 @@ body{
 .heatmap-table{border-collapse:collapse;width:max-content}
 .heatmap-th{
   position:sticky;top:0;z-index:3;background:var(--bg2);
-  font-size:.6rem;text-align:left;
-  padding:0 3px 10px;white-space:nowrap;writing-mode:vertical-rl;
+  font-size:.58rem;color:var(--text-dim);text-align:center;
+  padding:0 2px 10px;white-space:nowrap;writing-mode:vertical-rl;
   transform:rotate(180deg);vertical-align:bottom;
 }
 .heatmap-row-label{
   position:sticky;left:0;z-index:2;background:var(--bg2);
-  padding:3px 12px 3px 0;white-space:nowrap;
-  box-shadow:2px 0 8px rgba(0,0,0,.5);min-width:130px;
+  font-size:.66rem;color:var(--text-dim);text-align:right;
+  padding:2px 8px 2px 0;white-space:nowrap;max-width:170px;
+  overflow:hidden;text-overflow:ellipsis;
+  box-shadow:2px 0 6px rgba(0,0,0,.4);
 }
-.hm-date{display:block;font-size:.78rem;font-weight:700;color:var(--text)}
-.hm-venue{display:block;font-size:.62rem;color:var(--text-dim);margin-top:1px}
 .heatmap-cell{padding:1px}
 .heatmap-dot{width:14px;height:14px;border-radius:2px;transition:opacity .15s}
 .heatmap-dot:hover{opacity:.6!important;cursor:default}
+.heatmap-alb-hdr td{
+  position:sticky;left:0;z-index:2;background:var(--bg2);
+  font-family:'Los Piojos','Bebas Neue',sans-serif;
+  font-size:.82rem;letter-spacing:.08em;
+  padding:12px 0 3px 0;
+}
 
 /* ── SHARE BUTTON ── */
 .btn-share{
@@ -321,6 +327,51 @@ body{
 .modal-song-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
 .modal-song-name{color:var(--text);flex:1}
 
+/* ── SVG MAP ── */
+.map-wrap{
+  background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);
+  padding:24px;display:flex;flex-wrap:wrap;gap:32px;align-items:flex-start;
+}
+.map-svg-container{flex:0 0 auto;display:flex;justify-content:center}
+.map-legend{flex:1;min-width:200px}
+.map-legend-title{font-size:.72rem;text-transform:uppercase;letter-spacing:.1em;color:var(--text-dim);margin-bottom:14px}
+.map-legend-row{display:flex;align-items:center;gap:10px;margin-bottom:10px;font-size:.82rem}
+.map-dot-preview{border-radius:50%;flex-shrink:0;border:1px solid rgba(255,255,255,.1)}
+.map-venue-name{flex:1;color:var(--text)}
+.map-venue-count{color:var(--gold);font-weight:700;font-family:'Bebas Neue',sans-serif;font-size:1.15rem}
+
+/* ── TU PRIMAVERA CARD ── */
+.primavera-card{
+  width:540px;max-width:100%;margin:0 auto;
+  background:#0f0f0f;
+  background-image:radial-gradient(ellipse 80% 50% at 50% 0%,rgba(212,168,67,.1) 0%,transparent 70%);
+  border:1px solid var(--gold-dim);border-radius:12px;
+  padding:36px 32px 24px;
+}
+.pc-title{
+  font-family:'Los Piojos','Bebas Neue',sans-serif;
+  font-size:2.4rem;letter-spacing:.06em;color:var(--gold);line-height:1;
+  text-shadow:0 0 40px rgba(212,168,67,.25);
+}
+.pc-sub{font-size:.75rem;color:var(--text-dim);margin-top:5px;letter-spacing:.13em;text-transform:uppercase}
+.pc-divider{height:1px;background:var(--border);margin:20px 0}
+.pc-row{display:flex;gap:36px;margin-bottom:22px}
+.pc-stat-num{font-family:'Bebas Neue',sans-serif;font-size:3rem;color:var(--gold);line-height:1}
+.pc-stat-lbl{font-size:.62rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:.1em;margin-top:2px}
+.pc-song{border-left:3px solid;padding:10px 14px;background:rgba(255,255,255,.03);border-radius:0 6px 6px 0;margin-bottom:22px}
+.pc-song-lbl{font-size:.58rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:.1em;margin-bottom:5px}
+.pc-song-name{font-size:1.1rem;font-weight:600;color:var(--text);line-height:1.2}
+.pc-song-alb{font-size:.66rem;color:var(--text-dim);margin-top:3px}
+.pc-score-wrap{display:flex;align-items:center;gap:18px;margin-bottom:22px}
+.pc-score{
+  font-family:'Bebas Neue',sans-serif;font-size:5rem;color:var(--gold);
+  line-height:1;text-shadow:0 0 60px rgba(212,168,67,.3);flex-shrink:0;
+}
+.pc-score-lbl{font-family:'Los Piojos','Bebas Neue',sans-serif;font-size:1.5rem;color:var(--text);letter-spacing:.04em}
+.pc-score-sub{font-size:.6rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:.12em;margin-top:3px}
+.pc-footer{font-size:.63rem;color:var(--text-dim);letter-spacing:.08em;font-style:italic;border-top:1px solid var(--border);padding-top:14px;text-align:center;margin-top:4px}
+.pc-dl-wrap{text-align:center;margin-top:16px}
+
 /* ── FOOTER ── */
 .site-footer{
   text-align:center;padding:32px 24px;border-top:1px solid var(--border);
@@ -355,19 +406,19 @@ body{
 <div class="sel-panel" id="sel-panel">
   <div class="sel-inner">
     <div class="sel-title">¿A cuáles fuiste?</div>
-    <div class="sel-sub">Seleccioná los shows — el dashboard se actualiza en tiempo real.</div>
+    <div class="sel-sub">Seleccioná los recitales — el dashboard se actualiza en tiempo real.</div>
     <div class="sel-actions">
       <button class="btn-sm" id="btn-all">Seleccionar todos</button>
       <button class="btn-sm" id="btn-none">Deseleccionar todos</button>
       <button class="btn-sm primary" id="btn-ver">Ver mi primavera →</button>
     </div>
-    <div class="shows-grid" id="shows-grid"></div>
+    <div class="recitales-grid" id="recitales-grid"></div>
   </div>
 </div>
 
 <div class="hero">
   <div class="hero-title" id="hero-title"><em>PRIMAVERA<br>PIOJOSA</em></div>
-  <div class="hero-sub" id="hero-sub">Dic 2024 – Jun 2025 · 16 shows · <span class="pj"><em>Los Piojos</em></span></div>
+  <div class="hero-sub" id="hero-sub">Dic 2024 – Jun 2025 · 16 recitales · <span class="pj"><em>Los Piojos</em></span></div>
   <div class="hero-badge" id="hero-badge"></div>
 </div>
 
@@ -385,6 +436,7 @@ body{
 </footer>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script>
 // ─────────────────────────────────────────────
 // INLINE FALLBACK DATA
@@ -412,7 +464,7 @@ const VENUE_SHORT={
   'Tecnópolis, Villa Martelli, Argentina':'Quilmes Rock',
   'Hipódromo Parque de La Independencia, Rosario, Argentina':'Rosario',
   'Teatro Griego Frank Romero Day, Mendoza, Argentina':'Mendoza',
-  'Playón Mario Alberto Kempes':'Kempes, Córdoba',
+  'Playón Mario Alberto Kempes':'Córdoba',
   'Parque de la Ciudad, Buenos Aires, Argentina':'Parque de la Ciudad',
   'Estadio River Plate, Buenos Aires, Argentina':'River Plate',
 };
@@ -427,6 +479,12 @@ const VENUE_SLUG={
   'Parque de la Ciudad, Buenos Aires, Argentina':'parque-ciudad',
   'Estadio River Plate, Buenos Aires, Argentina':'river-plate',
 };
+
+// SVG map — viewBox 0 0 280 480, lon -75→-52, lat -56→-21
+function latLngToSvg(lat,lng){
+  return [(lng+75)/23*280,(-21-lat)/35*480];
+}
+const ARG_PATH='M91,21 L114,15 L158,14 L207,21 L250,62 L261,84 L219,96 L197,107 L189,137 L203,187 L213,219 L217,240 L158,267 L146,288 L128,302 L116,343 L104,363 L104,405 L73,425 L79,439 L128,459 L97,466 L73,459 L50,453 L24,432 L30,398 L37,343 L40,309 L43,261 L51,219 L61,192 L63,158 L67,96 L79,55 Z';
 
 const SHOW_POPULARITY = {
   '2024-12-14': 0.7582,  // Estadio Ciudad de La Plata, La Plat
@@ -455,19 +513,19 @@ const ORIGIN_CITIES=[
   ['Mar del Plata, Bs As',-38.000,-57.563],
   ['Bahía Blanca, Bs As',-38.719,-62.270],
   ['Rosario, Santa Fe',-32.947,-60.639],
-  ['Santa Fe capital',-31.635,-60.699],
-  ['Córdoba capital',-31.420,-64.189],
-  ['Mendoza capital',-32.891,-68.845],
-  ['San Juan capital',-31.537,-68.519],
-  ['San Luis capital',-33.295,-66.338],
+  ['Santa Fe Capital',-31.635,-60.699],
+  ['Córdoba Capital',-31.420,-64.189],
+  ['Mendoza Capital',-32.891,-68.845],
+  ['San Juan Capital',-31.537,-68.519],
+  ['San Luis Capital',-33.295,-66.338],
   ['San Miguel de Tucumán',-26.816,-65.217],
-  ['Salta capital',-24.782,-65.423],
-  ['Jujuy capital',-24.194,-65.299],
+  ['Salta Capital',-24.782,-65.423],
+  ['Jujuy Capital',-24.194,-65.299],
   ['Resistencia, Chaco',-27.451,-58.986],
-  ['Corrientes capital',-27.480,-58.830],
+  ['Corrientes Capital',-27.480,-58.830],
   ['Posadas, Misiones',-27.367,-55.896],
   ['Paraná, Entre Ríos',-31.733,-60.523],
-  ['Neuquén capital',-38.951,-68.059],
+  ['Neuquén Capital',-38.951,-68.059],
   ['Bariloche, Río Negro',-41.133,-71.310],
   ['Comodoro Rivadavia, Chubut',-45.863,-67.500],
   ['Montevideo, Uruguay',-34.906,-56.188],
@@ -515,14 +573,14 @@ const numFmt=n=>Math.round(n).toLocaleString('es-AR');
 // STATE
 // ─────────────────────────────────────────────
 let allShows=[], albumsData={}, sel=new Set(), charts={};
-let currentOriginIdx=0; // default Ciudad Jardín
+let currentOriginIdx=0;
 
 // ─────────────────────────────────────────────
 // INIT
 // ─────────────────────────────────────────────
 async function init(){
   try{
-    const [sr,ar]=await Promise.all([fetch('shows.json'),fetch('albumes.json')]);
+    const [sr,ar]=await Promise.all([fetch('recitales.json'),fetch('albumes.json')]);
     if(!sr.ok||!ar.ok) throw 0;
     allShows=await sr.json();
     albumsData=await ar.json();
@@ -533,7 +591,7 @@ async function init(){
   buildSelector();
   buildTimeline();
   const h=location.hash;
-  if(h.startsWith('#shows=')){
+  if(h.startsWith('#recitales=')){
     h.slice(7).split(',').map(Number).filter(n=>n>=0&&n<allShows.length).forEach(i=>sel.add(i));
     refreshSel();
     renderAll(getActive());
@@ -546,7 +604,7 @@ async function init(){
 // SELECTOR
 // ─────────────────────────────────────────────
 function buildSelector(){
-  const grid=document.getElementById('shows-grid');
+  const grid=document.getElementById('recitales-grid');
   allShows.forEach((s,i)=>{
     const c=document.createElement('div');
     c.className='show-card';c.dataset.i=i;
@@ -592,9 +650,9 @@ function refreshSel(){
   hb.textContent=on?`Tu selección: ${n} show${n!==1?'s':''}`:'';
   document.getElementById('hero-sub').innerHTML=on
     ?`${n} show${n!==1?'s':''} · Tu Primavera`
-    :'Dic 2024 – Jun 2025 · 16 shows · <span class="pj"><em>Primavera Piojosa</em></span>';
+    :'Dic 2024 – Jun 2025 · 16 recitales · <span class="pj"><em>Primavera Piojosa</em></span>';
   document.getElementById('btn-share').style.display=on?'inline-block':'none';
-  const hashStr=on?`#shows=${[...sel].sort((a,b)=>a-b).join(',')}`:'';
+  const hashStr=on?`#recitales=${[...sel].sort((a,b)=>a-b).join(',')}`:'';
   history.replaceState(null,'',location.pathname+location.search+hashStr);
 }
 
@@ -616,10 +674,10 @@ function buildTimeline(){
 // ─────────────────────────────────────────────
 // COMPUTE
 // ─────────────────────────────────────────────
-function compute(shows){
+function compute(recitales){
   const albums=albumsData.albums||[];
   const plays=[];
-  for(const sh of shows)
+  for(const sh of recitales)
     for(const raw of splitSongs(sh.songs))
       plays.push({name:raw,alb:matchAlbum(raw,albums)});
 
@@ -662,12 +720,12 @@ function compute(shows){
     if(ns.length) never[alb.title]={alb,ns};
   }
 
-  const cities=new Set(shows.map(s=>VENUE_SHORT[s.venue]||s.venue)).size;
+  const cities=new Set(recitales.map(s=>VENUE_SHORT[s.venue]||s.venue)).size;
 
   // tour route km
   let tourKm=0;
-  for(let i=1;i<shows.length;i++){
-    const a=VENUE_COORDS[shows[i-1].venue],b=VENUE_COORDS[shows[i].venue];
+  for(let i=1;i<recitales.length;i++){
+    const a=VENUE_COORDS[recitales[i-1].venue],b=VENUE_COORDS[recitales[i].venue];
     if(a&&b) tourKm+=haversine(a,b);
   }
 
@@ -678,37 +736,39 @@ function compute(shows){
 // ─────────────────────────────────────────────
 // RENDER ALL
 // ─────────────────────────────────────────────
-function renderAll(shows){
+function renderAll(recitales){
   Object.values(charts).forEach(c=>c.destroy());
   charts={};
   const main=document.getElementById('main');
   document.getElementById('loader').style.display='none';
   [...main.children].forEach(c=>{if(c.id!=='loader') c.remove()});
-  const d=compute(shows);
+  const d=compute(recitales);
   if(sel.size>0){
     const b=el('div','mode-banner');
     b.innerHTML=`Mostrando <strong>Tu Primavera</strong> — ${sel.size} show${sel.size!==1?'s':''} seleccionado${sel.size!==1?'s':''}`;
     main.appendChild(b);
   }
-  main.appendChild(renderStats(d,shows));
-  main.appendChild(renderGallery(shows));
-  main.appendChild(renderArranque(shows,d));
+  main.appendChild(renderStats(d,recitales));
+  main.appendChild(renderGallery(recitales));
+  main.appendChild(renderArranque(recitales,d));
   main.appendChild(renderTop15(d));
   main.appendChild(renderOnce(d));
   main.appendChild(renderAlbumDist(d));
-  main.appendChild(renderHeatmap(shows));
-  main.appendChild(renderEvolution(shows));
+  main.appendChild(renderHeatmap(recitales));
+  main.appendChild(renderPopularity(recitales));
+  main.appendChild(renderMap(recitales));
   main.appendChild(renderNever(d));
+  if(sel.size>0) main.appendChild(renderTuPrimavera(recitales,d));
 }
 
 function el(tag,cls){const e=document.createElement(tag);if(cls)e.className=cls;return e}
 
 // ─── STATS ───
-function renderStats(d,shows){
-  const sec=sec_('Los <em>numeros</em>');
+function renderStats(d,recitales){
+  const sec=sec_('Los números');
   const g=el('div','stats-grid');
   [
-    [shows.length,'Shows'],
+    [recitales.length,'recitales'],
     [numFmt(d.total),'Canciones tocadas'],
     [d.unique,'Canciones únicas'],
     [d.cities,'Ciudades'],
@@ -722,18 +782,18 @@ function renderStats(d,shows){
 }
 
 // ─── SHOW GALLERY ───
-const POP_MIN=0.3323, POP_MAX=0.7855;
+const POP_MIN=0.01, POP_MAX=0.9;
 
-function renderGallery(shows){
-  const sec=sec_('Los <em>shows</em>');
+function renderGallery(recitales){
+  const sec=sec_('Los recitales');
   const scroll=el('div','show-gal-scroll');
   const pad=n=>String(n).padStart(2,'0');
 
-  shows.forEach(s=>{
+  recitales.forEach(s=>{
     const globalIdx=allShows.indexOf(s);
     const num=pad(globalIdx+1);
     const key=`${s.year}-${pad(s.month)}-${pad(s.day)}`;
-    const showSrc=`assets/shows/${key}.jpg`;
+    const showSrc=`assets/recitales/${key}.jpg`;
     const venueSrc=`assets/venues/${VENUE_SLUG[s.venue]||'default'}.jpg`;
     const city=VENUE_SHORT[s.venue]||s.venue;
     const venueShort=s.venue.split(',')[0];
@@ -743,7 +803,7 @@ function renderGallery(shows){
     const popPct=pop!=null?Math.round((pop-POP_MIN)/(POP_MAX-POP_MIN)*100):null;
     // colores: alternativo=azul, clásico=dorado
     const popColor=pop!=null?`hsl(${Math.round(40+popPct*0.1)},${Math.round(60+popPct*0.4)}%,${Math.round(35+popPct*0.2)}%)`:'#555';
-    const popLbl=pop==null?'':pop>=0.74?'clásico':pop<=0.57?'rareza':'';
+    const popLbl=pop==null?'':pop>=0.74?'Clásico':pop<=0.57?'Rareza':'';
     const popLblHtml=popLbl
       ?`<span class="show-gal-pop-lbl" style="background:${popColor}22;color:${popColor}">${popLbl}</span>`
       :'';
@@ -783,13 +843,13 @@ function renderGallery(shows){
 }
 
 // ─── ARRANQUÉ ───
-function renderArranque(shows,d){
-  const sec=sec_('¿Cuántas veces <em>Arranque</em> por tu amor?');
+function renderArranque(recitales,d){
+  const sec=sec_('¿Cuántas veces arranqué por tu amor?');
   const card=el('div','arranque-card');
 
   const calcKm=originIdx=>{
     const [,lat,lng]=ORIGIN_CITIES[originIdx];
-    return shows.reduce((sum,s)=>{
+    return recitales.reduce((sum,s)=>{
       const co=VENUE_COORDS[s.venue];
       if(!co) return sum;
       return sum+haversine([lat,lng],co);
@@ -799,7 +859,7 @@ function renderArranque(shows,d){
   const buildContent=idx=>{
     const km=Math.round(calcKm(idx));
     const [cityName]=ORIGIN_CITIES[idx];
-    const perShow=shows.length>0?Math.round(km/shows.length):0;
+    const perShow=recitales.length>0?Math.round(km/recitales.length):0;
     const argLen=3694;
     const veces=(km/argLen).toFixed(1);
     let cmp='';
@@ -821,8 +881,8 @@ function renderArranque(shows,d){
             <span class="arranque-detail-val" style="max-width:200px;text-align:right;font-size:.78rem">${cityName.replace(' ★','')}</span>
           </div>
           <div class="arranque-detail-row">
-            <span class="arranque-detail-label">Shows cubiertos</span>
-            <span class="arranque-detail-val">${shows.length}</span>
+            <span class="arranque-detail-label">recitales cubiertos</span>
+            <span class="arranque-detail-val">${recitales.length}</span>
           </div>
           <div class="arranque-detail-row">
             <span class="arranque-detail-label">Promedio por show</span>
@@ -866,7 +926,7 @@ function renderArranque(shows,d){
 
 // ─── TOP 15 ───
 function renderTop15(d){
-  const sec=sec_('Top <em>15</em> más tocadas');
+  const sec=sec_('Top 15 más tocadas');
   const list=el('div','bar-list');
   const mx=d.top15[0]?.count||1;
   d.top15.forEach((item,idx)=>{
@@ -905,7 +965,7 @@ function renderTop15(d){
 
 // ─── ONCE ───
 function renderOnce(d){
-  const sec=sec_('Tocadas <em>una sola vez</em>');
+  const sec=sec_('Tocadas una sola vez');
   const sub=el('p');sub.style.cssText='font-size:.82rem;color:var(--text-dim);margin-bottom:12px';
   sub.textContent=`${d.once.length} canciones sonaron una única vez en toda la gira.`;
   sec.appendChild(sub);
@@ -923,7 +983,7 @@ function renderOnce(d){
 
 // ─── ALBUM DIST (HTML bars) ───
 function renderAlbumDist(d){
-  const sec=sec_('Distribución por <em>album</em>');
+  const sec=sec_('Distribución por álbum');
   const entries=[...d.albMap.entries()].filter(([,v])=>v.count>0).sort((a,b)=>b[1].count-a[1].count);
   const maxC=entries[0]?.[1]?.count||1;
 
@@ -946,48 +1006,73 @@ function renderAlbumDist(d){
   return sec;
 }
 
-// ─── EVOLUTION ───
-function renderEvolution(shows){
-  const sec=sec_('Canciones por <em>show</em>');
+// ─── POPULARITY BAR CHART ───
+function renderPopularity(shows){
+  const sec=sec_('Popularidad de <em>setlists</em>');
   const box=el('div','chart-box');
-  const cv=el('canvas');cv.id='chart-evo';
+  const cv=el('canvas');cv.id='chart-pop';
   box.appendChild(cv);sec.appendChild(box);
 
-  const counts=shows.map(s=>splitSongs(s.songs).length);
-  const minC=Math.min(...counts);
-  const maxC=Math.max(...counts);
+  const pad=n=>String(n).padStart(2,'0');
+  let items=shows.map(s=>{
+    const key=`${s.year}-${pad(s.month)}-${pad(s.day)}`;
+    const pop=SHOW_POPULARITY[key];
+    const pct=pop!=null?Math.round((pop-POP_MIN)/(POP_MAX-POP_MIN)*100):null;
+    const cat=pop==null?null:pop>=0.74?'clasico':pop<=0.57?'rareza':'mixto';
+    return {
+      label:`${VENUE_SHORT[s.venue]||s.venue} · ${s.day} ${MONTHS_S[s.month]}`,
+      pop,pct,cat,
+      lbl:cat==='clasico'?'clásico':cat==='rareza'?'rareza':'mixto'
+    };
+  }).filter(x=>x.pct!=null);
+
+  // Ordenado de más clásico a más rareza (mayor a menor)
+  items.sort((a,b)=>b.pct-a.pct);
+
+  const CAT={clasico:'#d4a843',mixto:'#7a6e58',rareza:'#4a78aa'};
+  const colors=items.map(x=>CAT[x.cat]||'#555');
+  const midLine=Array(items.length).fill(50);
 
   setTimeout(()=>{
-    if(charts.evo) charts.evo.destroy();
-    charts.evo=new Chart(cv,{
-      type:'line',
+    if(charts.pop) charts.pop.destroy();
+    charts.pop=new Chart(cv,{
+      type:'bar',
       data:{
-        labels:shows.map(s=>`${s.day} ${MONTHS_S[s.month]}`),
-        datasets:[{
-          label:'Canciones',
-          data:counts,
-          borderColor:'#d4a843',backgroundColor:'rgba(212,168,67,.08)',
-          borderWidth:2,pointBackgroundColor:'#d4a843',pointBorderColor:'#111',
-          pointRadius:5,pointHoverRadius:7,fill:true,tension:.3
-        }]
+        labels:items.map(x=>x.label),
+        datasets:[
+          {
+            data:items.map(x=>x.pct),
+            backgroundColor:colors,
+            borderRadius:4,borderSkipped:false,
+            barThickness:18,
+          },
+          {
+            type:'line',data:midLine,
+            borderColor:'rgba(255,255,255,.08)',borderWidth:1,
+            borderDash:[4,5],pointRadius:0,fill:false,
+          }
+        ]
       },
       options:{
-        responsive:true,
+        indexAxis:'y',responsive:true,
         plugins:{
           legend:{display:false},
           tooltip:{
             backgroundColor:'#1a1a1a',borderColor:'#333',borderWidth:1,
             titleColor:'#d4a843',bodyColor:'#e4ddd0',
-            callbacks:{label:c=>`${c.raw} canciones`}
+            filter:ti=>ti.datasetIndex===0,
+            callbacks:{label:c=>`${items[c.dataIndex].lbl} · ${c.raw}%`}
           }
         },
         scales:{
-          x:{ticks:{color:'#666',font:{size:10}},grid:{color:'#1f1f1f'}},
+          x:{
+            min:0,max:100,
+            ticks:{color:'#555',font:{size:10},callback:v=>`${v}%`},
+            grid:{color:'#1a1a1a'}
+          },
           y:{
-            ticks:{color:'#666',stepSize:2},
-            grid:{color:'#1f1f1f'},
-            min:Math.max(0,minC-4),
-            suggestedMax:maxC+2
+            ticks:{color:'#c0b89a',font:{size:11,weight:'500'}},
+            grid:{color:'#1a1a1a'}
           }
         }
       }
@@ -996,13 +1081,13 @@ function renderEvolution(shows){
   return sec;
 }
 
-// ─── HEATMAP (shows = filas, canciones = columnas) ───
+// ─── HEATMAP (álbumes/canciones = filas, shows = columnas) ───
 function renderHeatmap(shows){
   const sec=sec_('Shows <em>×</em> canciones');
   if(!shows.length) return sec;
   const albums=albumsData.albums||[];
 
-  // Colectar canciones únicas
+  // Colectar canciones únicas y sets por show
   const dispMap=new Map();
   const showSets=shows.map(s=>{
     const set=new Set();
@@ -1014,77 +1099,84 @@ function renderHeatmap(shows){
     return set;
   });
 
-  // Ordenar canciones por álbum → sin match al final
-  const songs=[];
+  // Agrupar canciones por álbum en orden del catálogo
+  const groups=[];
   const placed=new Set();
   for(const alb of albums){
+    const albSongs=[];
     for(const track of alb.tracks){
       const nt=norm(track);
       for(const [n,info] of dispMap){
         if(placed.has(n)) continue;
         if(n===nt||n.startsWith(nt+' ')||nt.startsWith(n+' ')||n.startsWith(nt+'(')||nt.startsWith(n+'(')){
-          songs.push({norm:n,display:info.display,alb:info.alb});
+          albSongs.push({norm:n,display:info.display,alb:info.alb});
           placed.add(n);break;
         }
       }
     }
+    if(albSongs.length) groups.push({title:alb.title,color:alb.color,songs:albSongs});
   }
-  for(const [n,info] of dispMap) if(!placed.has(n)) songs.push({norm:n,display:info.display,alb:info.alb});
+  const unmatched=[];
+  for(const [n,info] of dispMap) if(!placed.has(n)) unmatched.push({norm:n,display:info.display,alb:info.alb});
+  if(unmatched.length) groups.push({title:'Otros',color:'#555',songs:unmatched});
 
   const wrap=el('div','heatmap-wrap');
   const table=document.createElement('table');
   table.className='heatmap-table';
 
-  // ── Header: una columna por canción ──────────────────────────────────────
+  // ── Header: corner + una columna por show ────────────────────────────────
   const thead=document.createElement('thead');
   const hrow=document.createElement('tr');
   const corner=document.createElement('th');
   corner.style.cssText='position:sticky;top:0;left:0;z-index:4;background:var(--bg2)';
   hrow.appendChild(corner);
-
-  let prevAlb=null;
-  songs.forEach((song,i)=>{
+  shows.forEach(s=>{
     const th=document.createElement('th');
     th.className='heatmap-th';
-    if(song.alb?.title!==prevAlb&&i>0) th.style.borderLeft='2px solid var(--bg)';
-    th.style.color=song.alb?.color||'#666';
-    th.textContent=song.display;
-    th.title=`${song.display}${song.alb?' — '+song.alb.title:''}`;
-    prevAlb=song.alb?.title||null;
+    th.textContent=`${s.day}/${s.month}`;
+    th.title=`${fmtDate(s.year,s.month,s.day)} · ${VENUE_SHORT[s.venue]||s.venue}`;
     hrow.appendChild(th);
   });
   thead.appendChild(hrow);
   table.appendChild(thead);
 
-  // ── Body: una fila por show ───────────────────────────────────────────────
+  // ── Body: álbum header + canciones como filas ────────────────────────────
   const tbody=document.createElement('tbody');
-  shows.forEach((s,i)=>{
-    const row=document.createElement('tr');
+  groups.forEach(group=>{
+    // Fila separadora de álbum
+    const sepRow=document.createElement('tr');
+    sepRow.className='heatmap-alb-hdr';
+    const sepTd=document.createElement('td');
+    sepTd.colSpan=shows.length+1;
+    sepTd.style.color=group.color;
+    sepTd.textContent=group.title;
+    sepRow.appendChild(sepTd);
+    tbody.appendChild(sepRow);
 
-    const lbl=document.createElement('td');
-    lbl.className='heatmap-row-label';
-    lbl.innerHTML=`<span class="hm-date">${s.day} ${MONTHS_S[s.month]}</span><span class="hm-venue">${VENUE_SHORT[s.venue]||s.venue}</span>`;
-    row.appendChild(lbl);
+    group.songs.forEach(song=>{
+      const row=document.createElement('tr');
+      const nameTd=document.createElement('td');
+      nameTd.className='heatmap-row-label';
+      nameTd.textContent=song.display;
+      nameTd.title=song.display;
+      row.appendChild(nameTd);
 
-    let prevAlb2=null;
-    songs.forEach((song,j)=>{
-      const td=document.createElement('td');
-      td.className='heatmap-cell';
-      if(song.alb?.title!==prevAlb2&&j>0) td.style.borderLeft='2px solid var(--bg)';
-      prevAlb2=song.alb?.title||null;
-      const dot=document.createElement('div');
-      dot.className='heatmap-dot';
-      if(showSets[i].has(song.norm)){
-        dot.style.background=song.alb?.color||'#888';
-        dot.title=`${song.display} · ${fmtDate(s.year,s.month,s.day)}`;
-      } else {
-        dot.style.background='#1a1a1a';
-      }
-      td.appendChild(dot);
-      row.appendChild(td);
+      shows.forEach((s,i)=>{
+        const td=document.createElement('td');
+        td.className='heatmap-cell';
+        const dot=document.createElement('div');
+        dot.className='heatmap-dot';
+        if(showSets[i].has(song.norm)){
+          dot.style.background=song.alb?.color||group.color;
+          dot.title=`${song.display} · ${fmtDate(s.year,s.month,s.day)}`;
+        } else {
+          dot.style.background='#1a1a1a';
+        }
+        td.appendChild(dot);
+        row.appendChild(td);
+      });
+      tbody.appendChild(row);
     });
-
-    tbody.appendChild(row);
   });
 
   table.appendChild(tbody);
@@ -1095,7 +1187,7 @@ function renderHeatmap(shows){
 
 // ─── NEVER PLAYED ───
 function renderNever(d){
-  const sec=sec_('Las que <em>no sonaron</em>');
+  const sec=sec_('Las que no sonaron');
   const total=Object.values(d.never).reduce((s,{ns})=>s+ns.length,0);
   const sub=el('p');sub.style.cssText='font-size:.82rem;color:var(--text-dim);margin-bottom:18px';
   sub.textContent=`${total} canciones de los álbumes oficiales no sonaron en esta vuelta.`;
@@ -1109,6 +1201,153 @@ function renderNever(d){
     <div class="never-songs">${ns.map(t=>`<span class="never-song" style="border-left-color:${alb.color}">${t}</span>`).join('')}</div>`;
     sec.appendChild(wrap);
   });
+  return sec;
+}
+
+// ─── SVG MAP ───
+function renderMap(shows){
+  const sec=sec_('El <em>recorrido</em>');
+
+  const vc={};
+  shows.forEach(s=>{vc[s.venue]=(vc[s.venue]||0)+1});
+  const maxC=Math.max(...Object.values(vc),1);
+
+  // Ruta cronológica (puntos SVG)
+  const routePts=shows.map(s=>{
+    const co=VENUE_COORDS[s.venue];if(!co)return null;
+    const [x,y]=latLngToSvg(co[0],co[1]);
+    return `${x.toFixed(1)},${y.toFixed(1)}`;
+  }).filter(Boolean).join(' ');
+
+  // Markers por venue
+  const markersSvg=Object.entries(vc).map(([venue,cnt])=>{
+    const co=VENUE_COORDS[venue];if(!co)return '';
+    const [x,y]=latLngToSvg(co[0],co[1]);
+    const r=5+(cnt/maxC)*13;
+    const short=VENUE_SHORT[venue]||venue;
+    const yLbl=(y-r-5).toFixed(1);
+    return `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${(r+5).toFixed(1)}" fill="#d4a843" opacity="0.10"/>
+<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${r.toFixed(1)}" fill="#d4a843" opacity="0.88" stroke="#0f0f0f" stroke-width="1.5"/>
+<text x="${x.toFixed(1)}" y="${yLbl}" text-anchor="middle" fill="#e4ddd0" font-size="7.5" font-family="Outfit,sans-serif" opacity="0.85">${short}</text>`;
+  }).join('\n');
+
+  const svgHtml=`<svg viewBox="0 0 280 480" xmlns="http://www.w3.org/2000/svg"
+    style="width:100%;max-width:250px;height:auto;display:block;filter:drop-shadow(0 8px 40px rgba(0,0,0,.8))">
+    <defs>
+      <filter id="mglow"><feGaussianBlur stdDeviation="2.5" result="b"/>
+        <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+      </filter>
+    </defs>
+    <path d="${ARG_PATH}" fill="#111" stroke="#252525" stroke-width="1.2" stroke-linejoin="round"/>
+    <polyline points="${routePts}" fill="none" stroke="#d4a843" stroke-width="1.2"
+      stroke-dasharray="5,6" opacity="0.4" stroke-linecap="round"/>
+    <g filter="url(#mglow)">${markersSvg}</g>
+  </svg>`;
+
+  // Leyenda
+  const sortedV=Object.entries(vc).sort((a,b)=>b[1]-a[1]);
+  const legendRows=sortedV.map(([v,cnt])=>{
+    const r=5+(cnt/maxC)*13;
+    const sz=Math.round(r*1.8);
+    return `<div class="map-legend-row">
+      <div class="map-dot-preview" style="width:${sz}px;height:${sz}px;background:#d4a843;opacity:.85"></div>
+      <span class="map-venue-name">${VENUE_SHORT[v]||v}</span>
+      <span class="map-venue-count">${cnt}</span>
+    </div>`;
+  }).join('');
+
+  const wrap=el('div','map-wrap');
+  wrap.innerHTML=`
+    <div class="map-svg-container">${svgHtml}</div>
+    <div class="map-legend">
+      <div class="map-legend-title">Shows por lugar</div>
+      ${legendRows}
+      <div style="margin-top:16px;font-size:.7rem;color:var(--text-dim);line-height:1.6">
+        La línea punteada muestra<br>el recorrido cronológico.
+      </div>
+    </div>`;
+  sec.appendChild(wrap);
+  return sec;
+}
+
+// ─── TU PRIMAVERA CARD ───
+function renderTuPrimavera(recitales,d){
+  const sec=sec_('Tu <em>Primavera Piojosa</em>');
+  const pad=n=>String(n).padStart(2,'0');
+
+  // Canción más escuchada
+  const topSong=d.sorted[0];
+
+  // Km desde origen actual
+  const [,lat,lng]=ORIGIN_CITIES[currentOriginIdx];
+  const totalKm=Math.round(recitales.reduce((sum,s)=>{
+    const co=VENUE_COORDS[s.venue];return co?sum+haversine([lat,lng],co):sum;
+  },0));
+
+  // Índice Piojoso
+  const pctShows=recitales.length/allShows.length;
+  const popScores=recitales.map(s=>{
+    const k=`${s.year}-${pad(s.month)}-${pad(s.day)}`;
+    return SHOW_POPULARITY[k];
+  }).filter(v=>v!=null);
+  const avgPop=popScores.length?popScores.reduce((a,b)=>a+b,0)/popScores.length:null;
+  const popComp=avgPop!=null?1-(avgPop-POP_MIN)/(POP_MAX-POP_MIN):0.5;
+  const uniqueVenues=new Set(recitales.map(s=>s.venue)).size;
+  const totalVenues=new Set(allShows.map(s=>s.venue)).size;
+  const divComp=uniqueVenues/totalVenues;
+  const score=Math.min(100,Math.round(pctShows*40+popComp*30+divComp*30));
+  const scoreLbl=score>=90?'Piojoso eterno':score>=70?'Piojoso de cepa':score>=40?'Piojoso de ley':'Piojoso de alma';
+
+  const topColor=topSong?.alb?.color||'var(--gold)';
+  const topAlb=topSong?.alb?.title||'';
+
+  const card=el('div','primavera-card');
+  card.id='primavera-card';
+  card.innerHTML=`
+    <div class="pc-title">PRIMAVERA PIOJOSA</div>
+    <div class="pc-sub"><span class="pj">Los Piojos</span> · Dic 2024 – Jun 2025</div>
+    <div class="pc-divider"></div>
+    <div class="pc-row">
+      <div class="pc-stat">
+        <div class="pc-stat-num">${recitales.length}</div>
+        <div class="pc-stat-lbl">recitales</div>
+      </div>
+      <div class="pc-stat">
+        <div class="pc-stat-num">${numFmt(totalKm)}</div>
+        <div class="pc-stat-lbl">kilómetros</div>
+      </div>
+    </div>
+    <div class="pc-song" style="border-left-color:${topColor}">
+      <div class="pc-song-lbl">tu canción del tour</div>
+      <div class="pc-song-name">${topSong?.display||'—'}</div>
+      <div class="pc-song-alb">${topAlb}</div>
+    </div>
+    <div class="pc-score-wrap">
+      <div class="pc-score">${score}</div>
+      <div>
+        <div class="pc-score-lbl">${scoreLbl}</div>
+        <div class="pc-score-sub">Índice Piojoso</div>
+      </div>
+    </div>
+    <div class="pc-footer">hecho con amor desde Ciudad Jardín, El Palomar</div>`;
+
+  sec.appendChild(card);
+
+  const dlWrap=el('div','pc-dl-wrap');
+  const btn=el('button','btn-sm primary');
+  btn.textContent='Descargar imagen';
+  btn.onclick=()=>{
+    html2canvas(document.getElementById('primavera-card'),{
+      useCORS:true,scale:2,backgroundColor:'#0f0f0f'
+    }).then(canvas=>{
+      const a=document.createElement('a');
+      a.download='primavera-piojosa.png';
+      a.href=canvas.toDataURL('image/png');
+      a.click();
+    });
+  };
+  dlWrap.appendChild(btn);
+  sec.appendChild(dlWrap);
   return sec;
 }
 
