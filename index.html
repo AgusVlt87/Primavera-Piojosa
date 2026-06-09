@@ -327,18 +327,21 @@ body{
 .modal-song-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
 .modal-song-name{color:var(--text);flex:1}
 
-/* ── SVG MAP ── */
-.map-wrap{
-  background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);
-  padding:24px;display:flex;flex-wrap:wrap;gap:32px;align-items:flex-start;
-}
-.map-svg-container{flex:0 0 auto;display:flex;justify-content:center}
-.map-legend{flex:1;min-width:200px}
-.map-legend-title{font-size:.72rem;text-transform:uppercase;letter-spacing:.1em;color:var(--text-dim);margin-bottom:14px}
-.map-legend-row{display:flex;align-items:center;gap:10px;margin-bottom:10px;font-size:.82rem}
-.map-dot-preview{border-radius:50%;flex-shrink:0;border:1px solid rgba(255,255,255,.1)}
-.map-venue-name{flex:1;color:var(--text)}
-.map-venue-count{color:var(--gold);font-weight:700;font-family:'Bebas Neue',sans-serif;font-size:1.15rem}
+/* ── TOUR ROUTE ── */
+.route-wrap{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:24px 28px;display:flex;flex-direction:column}
+.route-stop{display:flex;align-items:flex-start;gap:14px}
+.route-dot{width:12px;height:12px;border-radius:50%;background:var(--gold);flex-shrink:0;margin-top:5px;box-shadow:0 0 10px rgba(212,168,67,.35)}
+.route-content{flex:1}
+.route-city{font-family:'Bebas Neue',sans-serif;font-size:1.45rem;letter-spacing:.04em;color:var(--text);line-height:1}
+.route-venue-nm{font-size:.68rem;color:var(--text-dim);margin-top:2px}
+.route-info{margin-top:5px;display:flex;align-items:center;gap:10px}
+.route-shows-cnt{font-family:'Bebas Neue',sans-serif;font-size:.9rem;color:var(--gold)}
+.route-date{font-size:.72rem;color:var(--text-dim)}
+.route-connector{display:flex;align-items:center;gap:10px;padding:4px 0 4px 5px}
+.route-conn-line{width:2px;height:28px;background:var(--border);flex-shrink:0}
+.route-conn-km{font-size:.66rem;color:var(--text-dim);letter-spacing:.04em;font-style:italic}
+.route-footer{margin-top:16px;padding-top:14px;border-top:1px solid var(--border);font-size:.82rem;color:var(--text-dim);display:flex;align-items:baseline;gap:8px}
+.route-total-km{font-family:'Bebas Neue',sans-serif;font-size:1.8rem;color:var(--gold);line-height:1}
 
 /* ── TU PRIMAVERA CARD ── */
 .primavera-card{
@@ -480,11 +483,6 @@ const VENUE_SLUG={
   'Estadio River Plate, Buenos Aires, Argentina':'river-plate',
 };
 
-// SVG map — viewBox 0 0 280 480, lon -75→-52, lat -56→-21
-function latLngToSvg(lat,lng){
-  return [(lng+75)/23*280,(-21-lat)/35*480];
-}
-const ARG_PATH='M91,21 L114,15 L158,14 L207,21 L250,62 L261,84 L219,96 L197,107 L189,137 L203,187 L213,219 L217,240 L158,267 L146,288 L128,302 L116,343 L104,363 L104,405 L73,425 L79,439 L128,459 L97,466 L73,459 L50,453 L24,432 L30,398 L37,343 L40,309 L43,261 L51,219 L61,192 L63,158 L67,96 L79,55 Z';
 
 const SHOW_POPULARITY = {
   '2024-12-14': 0.7582,  // Estadio Ciudad de La Plata, La Plat
@@ -644,7 +642,7 @@ function refreshSel(){
   document.getElementById('sel-badge').style.display=on?'inline':'none';
   document.getElementById('sel-badge').textContent=`${n} show${n!==1?'s':''} seleccionado${n!==1?'s':''}`;
   document.getElementById('btn-reset').style.display=on?'inline-block':'none';
-  document.getElementById('hdr-title').textContent=on?'Tu Primavera Piojosa':'Primavera Piojosa';
+  document.getElementById('header-title').innerHTML=on?'<em>TU PRIMAVERA</em>':'<em>PRIMAVERA PIOJOSA</em>';
   const hb=document.getElementById('hero-badge');
   hb.style.display=on?'inline-block':'none';
   hb.textContent=on?`Tu selección: ${n} show${n!==1?'s':''}`:'';
@@ -756,7 +754,7 @@ function renderAll(recitales){
   main.appendChild(renderAlbumDist(d));
   main.appendChild(renderHeatmap(recitales));
   main.appendChild(renderPopularity(recitales));
-  main.appendChild(renderMap(recitales));
+  main.appendChild(renderTourRoute(recitales));
   main.appendChild(renderNever(d));
   if(sel.size>0) main.appendChild(renderTuPrimavera(recitales,d));
 }
@@ -826,14 +824,7 @@ function renderGallery(recitales){
 
     card.addEventListener('click',()=>openShowModal(s,globalIdx));
 
-    const img1=new Image();
-    img1.onload=()=>{card.style.backgroundImage=`url('${showSrc}')`};
-    img1.onerror=()=>{
-      const img2=new Image();
-      img2.onload=()=>{card.style.backgroundImage=`url('${venueSrc}')`};
-      img2.src=venueSrc;
-    };
-    img1.src=showSrc;
+    card.style.backgroundImage=`url('${showSrc}'), url('${venueSrc}')`;
 
     scroll.appendChild(card);
   });
@@ -1204,68 +1195,71 @@ function renderNever(d){
   return sec;
 }
 
-// ─── SVG MAP ───
-function renderMap(shows){
+// ─── TOUR ROUTE ───
+function renderTourRoute(shows){
   const sec=sec_('El <em>recorrido</em>');
 
-  const vc={};
-  shows.forEach(s=>{vc[s.venue]=(vc[s.venue]||0)+1});
-  const maxC=Math.max(...Object.values(vc),1);
+  // Venues únicos en orden de primera aparición
+  const seen=new Set();
+  const stops=[];
+  for(const s of shows){
+    if(!seen.has(s.venue)){seen.add(s.venue);stops.push({venue:s.venue,shows:[]});}
+    stops.find(st=>st.venue===s.venue).shows.push(s);
+  }
 
-  // Ruta cronológica (puntos SVG)
-  const routePts=shows.map(s=>{
-    const co=VENUE_COORDS[s.venue];if(!co)return null;
-    const [x,y]=latLngToSvg(co[0],co[1]);
-    return `${x.toFixed(1)},${y.toFixed(1)}`;
-  }).filter(Boolean).join(' ');
+  const wrap=el('div','route-wrap');
 
-  // Markers por venue
-  const markersSvg=Object.entries(vc).map(([venue,cnt])=>{
-    const co=VENUE_COORDS[venue];if(!co)return '';
-    const [x,y]=latLngToSvg(co[0],co[1]);
-    const r=5+(cnt/maxC)*13;
-    const short=VENUE_SHORT[venue]||venue;
-    const yLbl=(y-r-5).toFixed(1);
-    return `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${(r+5).toFixed(1)}" fill="#d4a843" opacity="0.10"/>
-<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${r.toFixed(1)}" fill="#d4a843" opacity="0.88" stroke="#0f0f0f" stroke-width="1.5"/>
-<text x="${x.toFixed(1)}" y="${yLbl}" text-anchor="middle" fill="#e4ddd0" font-size="7.5" font-family="Outfit,sans-serif" opacity="0.85">${short}</text>`;
-  }).join('\n');
+  stops.forEach(({venue,shows:vShows},i)=>{
+    // Conector con km desde venue anterior
+    if(i>0){
+      const prevCo=VENUE_COORDS[stops[i-1].venue];
+      const currCo=VENUE_COORDS[venue];
+      const conn=el('div','route-connector');
+      if(prevCo&&currCo){
+        const km=Math.round(haversine(prevCo,currCo));
+        conn.innerHTML=`<div class="route-conn-line"></div><span class="route-conn-km">${numFmt(km)} km</span>`;
+      } else {
+        conn.innerHTML=`<div class="route-conn-line"></div>`;
+      }
+      wrap.appendChild(conn);
+    }
 
-  const svgHtml=`<svg viewBox="0 0 280 480" xmlns="http://www.w3.org/2000/svg"
-    style="width:100%;max-width:250px;height:auto;display:block;filter:drop-shadow(0 8px 40px rgba(0,0,0,.8))">
-    <defs>
-      <filter id="mglow"><feGaussianBlur stdDeviation="2.5" result="b"/>
-        <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
-      </filter>
-    </defs>
-    <path d="${ARG_PATH}" fill="#111" stroke="#252525" stroke-width="1.2" stroke-linejoin="round"/>
-    <polyline points="${routePts}" fill="none" stroke="#d4a843" stroke-width="1.2"
-      stroke-dasharray="5,6" opacity="0.4" stroke-linecap="round"/>
-    <g filter="url(#mglow)">${markersSvg}</g>
-  </svg>`;
+    const short=VENUE_SHORT[venue]||venue.split(',')[0];
+    const venueName=venue.split(',')[0];
+    const f=vShows[0],l=vShows[vShows.length-1];
+    let dateStr;
+    if(vShows.length===1){
+      dateStr=`${f.day} ${MONTHS_F[f.month]} ${f.year}`;
+    } else {
+      const sameYear=f.year===l.year;
+      dateStr=`${f.day} ${MONTHS_S[f.month]}${!sameYear?' '+f.year:''} – ${l.day} ${MONTHS_S[l.month]} ${l.year}`;
+    }
 
-  // Leyenda
-  const sortedV=Object.entries(vc).sort((a,b)=>b[1]-a[1]);
-  const legendRows=sortedV.map(([v,cnt])=>{
-    const r=5+(cnt/maxC)*13;
-    const sz=Math.round(r*1.8);
-    return `<div class="map-legend-row">
-      <div class="map-dot-preview" style="width:${sz}px;height:${sz}px;background:#d4a843;opacity:.85"></div>
-      <span class="map-venue-name">${VENUE_SHORT[v]||v}</span>
-      <span class="map-venue-count">${cnt}</span>
-    </div>`;
-  }).join('');
+    const stop=el('div','route-stop');
+    stop.innerHTML=`
+      <div class="route-dot"></div>
+      <div class="route-content">
+        <div class="route-city">${short}</div>
+        <div class="route-venue-nm">${venueName}</div>
+        <div class="route-info">
+          <span class="route-shows-cnt">${vShows.length} show${vShows.length>1?'s':''}</span>
+          <span class="route-date">${dateStr}</span>
+        </div>
+      </div>`;
+    wrap.appendChild(stop);
+  });
 
-  const wrap=el('div','map-wrap');
-  wrap.innerHTML=`
-    <div class="map-svg-container">${svgHtml}</div>
-    <div class="map-legend">
-      <div class="map-legend-title">Shows por lugar</div>
-      ${legendRows}
-      <div style="margin-top:16px;font-size:.7rem;color:var(--text-dim);line-height:1.6">
-        La línea punteada muestra<br>el recorrido cronológico.
-      </div>
-    </div>`;
+  // Km totales venue a venue
+  let totalKm=0;
+  for(let i=1;i<stops.length;i++){
+    const a=VENUE_COORDS[stops[i-1].venue],b=VENUE_COORDS[stops[i].venue];
+    if(a&&b) totalKm+=haversine(a,b);
+  }
+
+  const footer=el('div','route-footer');
+  footer.innerHTML=`<span class="route-total-km">${numFmt(Math.round(totalKm))}</span> km de recorrido total`;
+  wrap.appendChild(footer);
+
   sec.appendChild(wrap);
   return sec;
 }
