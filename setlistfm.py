@@ -6,12 +6,12 @@ import os, json, time
 
 path = os.path.dirname(os.path.realpath(__file__)).replace("\\", "/").strip()
 
-user_agent = "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.87 Safari/537.36"
+user_agent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36"
 
 month_abr = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"]
 
 # ── Configurar rango de fechas (inclusive) ──────────────────────────────────
-START_DATE = date(2024,  1,  1)
+START_DATE = date(1989,  1,  1)
 END_DATE   = date(2029, 12, 31)
 # ───────────────────────────────────────────────────────────────────────────
 
@@ -51,7 +51,7 @@ def write_json(concerts):
 
 def gather_concert_data(concert_urls):
     concerts = [None] * len(concert_urls)
-    with ThreadPoolExecutor(max_workers=8) as pool:
+    with ThreadPoolExecutor(max_workers=3) as pool:
         for i, url in enumerate(concert_urls):
             pool.submit(get_concert_data, i, url, concerts)
     return [c for c in concerts if c is not None]
@@ -63,8 +63,13 @@ def get_concert_data(i, url, concerts):
 
         date_block   = soup.find("div", {"class": "dateBlock"})
         info_cont    = soup.find("div", {"class": "infoContainer"})
-        headline_div = info_cont.find("div", {"class": "setlistHeadline"})
         setlist_div  = soup.find("div", {"class": "setlistList"})
+
+        if not date_block or not info_cont or not setlist_div:
+            print(f"  SKIP {url}: estructura HTML inesperada")
+            return
+
+        headline_div = info_cont.find("div", {"class": "setlistHeadline"})
 
         year      = int(date_block.find("span", {"class": "year"}).getText().strip())
         month_str = date_block.find("span", {"class": "month"}).getText().strip()
@@ -83,19 +88,20 @@ def get_concert_data(i, url, concerts):
             tour = tour_a.find("span").getText().strip()
 
         venue = ""
-        venue_a = headline_div.find(
-            lambda tag: tag.name == "a" and "title" in tag.attrs
-                        and "more setlists from" in tag["title"].lower()
-        )
-        if venue_a:
-            venue = venue_a.find("span").getText().strip()
-
         artist = ""
-        strong = headline_div.find("strong")
-        if strong:
-            a_tag = strong.find("a")
-            if a_tag:
-                artist = a_tag.getText().strip()
+        if headline_div:
+            venue_a = headline_div.find(
+                lambda tag: tag.name == "a" and "title" in tag.attrs
+                            and "more setlists from" in tag["title"].lower()
+            )
+            if venue_a:
+                venue = venue_a.find("span").getText().strip()
+
+            strong = headline_div.find("strong")
+            if strong:
+                a_tag = strong.find("a")
+                if a_tag:
+                    artist = a_tag.getText().strip()
 
         songs = [a.getText().strip() for a in setlist_div.find_all("a", {"class": "songLabel"})]
 
@@ -121,10 +127,14 @@ def get_concert_urls(base_url):
     last_a = soup.find("a", {"title": "Go to last page"})
     num_pages = int(last_a.getText().strip()) if last_a else 1
 
+    if num_pages == 1 and not last_a:
+        title_tag = soup.find("title")
+        print(f"  [debug] Sin paginación — título de la página: {title_tag.getText().strip() if title_tag else '(sin title)'}")
+
     print(f"Escaneando {num_pages} páginas de listado...")
 
     page_results = [[] for _ in range(num_pages)]
-    with ThreadPoolExecutor(max_workers=8) as pool:
+    with ThreadPoolExecutor(max_workers=3) as pool:
         for i in range(num_pages):
             pool.submit(get_page_concerts, i, page_results, base_url)
 
@@ -181,10 +191,19 @@ def get_soup(url):
         try:
             req = Request(url)
             req.add_header("User-Agent", user_agent)
+            req.add_header("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8")
+            req.add_header("Accept-Language", "es-AR,es;q=0.9,en;q=0.8")
+            req.add_header("Accept-Encoding", "identity")
+            req.add_header("Connection", "keep-alive")
             with urlopen(req, timeout=20) as resp:
-                return BeautifulSoup(resp.read(), "html.parser")
+                html = resp.read()
+            soup = BeautifulSoup(html, "html.parser")
+            if not soup.find("title"):
+                time.sleep(2 + attempt * 2)
+                continue
+            return soup
         except Exception:
-            time.sleep(0.5 * (attempt + 1))
+            time.sleep(1 + attempt * 2)
     return None
 
 

@@ -37,6 +37,13 @@ body{
   display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;
 }
 .header-left{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap}
+.header-right{display:flex;align-items:center;gap:14px;flex-wrap:wrap;justify-content:flex-end}
+.prim-controls{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.prim-controls::before{content:'';width:1px;height:22px;background:var(--border);flex-shrink:0}
+@media(max-width:640px){
+  .header-right{width:100%;justify-content:space-between}
+  .prim-controls::before{display:none}
+}
 .header-title{
   font-family:'Los Piojos',sans-serif;font-size:1.9rem;letter-spacing:.05em;color:var(--gold);
   text-shadow:0 0 40px rgba(212,168,67,.3);
@@ -52,6 +59,14 @@ body{
   font-family:'DM Sans',sans-serif;font-weight:700;font-size:.82rem;cursor:pointer;transition:background .2s;white-space:nowrap;
 }
 .btn-toggle:hover{background:#e8c060}
+.mode-switch{display:inline-flex;border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;flex-shrink:0}
+.mode-switch button{
+  background:transparent;border:none;color:var(--text-dim);
+  padding:7px 13px;font-family:'DM Sans',sans-serif;font-weight:600;font-size:.76rem;
+  cursor:pointer;transition:all .2s;white-space:nowrap;
+}
+.mode-switch button.active{background:var(--gold);color:#111}
+.mode-switch button:not(.active):hover{color:var(--gold)}
 .btn-reset{
   display:none;background:transparent;border:1px solid var(--border);color:var(--text-dim);
   padding:8px 14px;border-radius:var(--radius);font-family:'DM Sans',sans-serif;font-size:.8rem;cursor:pointer;transition:all .2s;
@@ -239,6 +254,11 @@ body{
   padding:3px 10px;border-radius:20px;font-size:.76rem;border:1px solid;
 }
 .tag-logo{width:13px;height:13px;object-fit:contain}
+.bar-row.clickable{cursor:pointer}
+.bar-row.clickable:hover .bar-name{color:var(--gold)}
+.bar-row.clickable:hover .bar-track{filter:brightness(1.15)}
+.song-tag.clickable{cursor:pointer;transition:border-color .15s,background .15s}
+.song-tag.clickable:hover{border-color:var(--gold)!important;color:var(--gold)}
 
 /* ── CHARTS ── */
 .chart-box{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:20px}
@@ -286,6 +306,29 @@ body{
 .never-songs{display:flex;flex-wrap:wrap;gap:5px}
 .never-song{font-size:.76rem;padding:2px 9px;border-radius:3px;background:var(--bg3);color:var(--text-dim);border-left:3px solid}
 
+/* ── ARCHIVO (historia navegable) ── */
+.arch-year{border:1px solid var(--border);border-radius:var(--radius);margin-bottom:8px;overflow:hidden}
+.arch-year-hdr{
+  width:100%;display:flex;align-items:center;gap:12px;
+  background:var(--bg2);border:none;color:var(--text);padding:12px 16px;cursor:pointer;
+  font-family:'Bebas Neue',sans-serif;font-size:1.3rem;letter-spacing:.04em;text-align:left;transition:background .15s;
+}
+.arch-year-hdr:hover{background:var(--bg3)}
+.arch-year-meta{flex:1;font-family:'Outfit',sans-serif;font-size:.72rem;color:var(--text-dim);font-weight:400;letter-spacing:0}
+.arch-chev{transition:transform .2s;color:var(--text-dim);font-size:.9rem}
+.arch-year.open .arch-chev{transform:rotate(180deg)}
+.arch-shows{display:none;flex-direction:column}
+.arch-year.open .arch-shows{display:flex}
+.arch-show{display:flex;align-items:center;gap:12px;padding:9px 16px;border-top:1px solid var(--border);font-size:.83rem}
+.arch-show.has-set{cursor:pointer;transition:background .15s}
+.arch-show.has-set:hover{background:var(--gold-faint)}
+.arch-show-date{color:var(--gold);font-weight:600;flex:0 0 58px}
+.arch-show.no-set .arch-show-date{color:var(--text-dim)}
+.arch-show-venue{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.arch-show.no-set .arch-show-venue{color:var(--text-dim)}
+.arch-show-count{color:var(--text-dim);font-size:.72rem;flex-shrink:0}
+.arch-show.has-set:hover .arch-show-count{color:var(--gold)}
+
 .loader{text-align:center;padding:80px;color:var(--text-dim);font-size:1.1rem}
 .show-gal-card{cursor:pointer}
 
@@ -326,6 +369,10 @@ body{
 .modal-song-num{font-size:.62rem;color:var(--text-dim);width:20px;text-align:right;flex-shrink:0;font-family:'Outfit',sans-serif}
 .modal-song-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
 .modal-song-name{color:var(--text);flex:1}
+.modal-song.nav{cursor:pointer}
+.modal-song.nav:hover .modal-song-name{color:var(--gold)}
+.modal-song.nav .modal-chev{color:var(--text-dim);font-size:1rem;flex-shrink:0}
+.modal-song.nav:hover .modal-chev{color:var(--gold)}
 
 /* ── TOUR ROUTE ── */
 .route-wrap{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:24px 28px;display:flex;flex-direction:column}
@@ -396,13 +443,19 @@ body{
 <header class="site-header">
   <div class="header-left">
     <span class="header-title" id="header-title"><em>PRIMAVERA PIOJOSA</em></span>
-    <span class="header-meta">Dic 2024 – Jun 2025 · <span class="pj"><em>Los Piojos</em></span></span>
+    <span class="header-meta" id="header-meta">Dic 2024 – Jun 2025 · <span class="pj"><em>Los Piojos</em></span></span>
   </div>
-  <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
-    <span class="sel-badge" id="sel-badge"></span>
-    <button class="btn-reset" id="btn-reset">Ver todo</button>
-    <button class="btn-share" id="btn-share">Compartir →</button>
-    <button class="btn-toggle" id="btn-toggle">★ Mi Primavera</button>
+  <div class="header-right">
+    <div class="mode-switch" id="mode-switch">
+      <button data-mode="primavera" class="active">Primavera 24–25</button>
+      <button data-mode="historia">Toda la historia</button>
+    </div>
+    <div class="prim-controls" id="prim-controls">
+      <span class="sel-badge" id="sel-badge"></span>
+      <button class="btn-reset" id="btn-reset">Ver todo</button>
+      <button class="btn-share" id="btn-share">Compartir →</button>
+      <button class="btn-toggle" id="btn-toggle">★ Mi Primavera</button>
+    </div>
   </div>
 </header>
 
@@ -440,13 +493,14 @@ body{
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="setlists_historia.js"></script>
 <script>
 // ─────────────────────────────────────────────
 // INLINE FALLBACK DATA
 // ─────────────────────────────────────────────
 const INLINE_SHOWS=[{"artist":"Los Piojos","year":2024,"month":12,"day":14,"venue":"Estadio Ciudad de La Plata, La Plata, Argentina","tour":"","songs":["Te diría","Desde lejos no se ve","Babilonia","Ay ay ay","Todo pasa","Buenos tiempos","Llévatelo","Tan solo","Intro Maradó","Maradó","Sudestada","Bicho de ciudad","Reggae rojo y negro","Fantasma","Motumbo","Ruleta","Vine hasta aquí","Luz de marfil","Pacífico","Verano del '92","Como Alí","No parés","Fumigator","Muévelo","El farolito","Finale","Cruel","Himno Nacional Argentino"]},{"artist":"Los Piojos","year":2024,"month":12,"day":15,"venue":"Estadio Ciudad de La Plata, La Plata, Argentina","tour":"","songs":["María y José","Manjar","Hoy es hoy","Civilización","Canción de cuna","Labios de seda","Fantasma","Luz de marfil","Entrando en tu ciudad","Sudestada","Arco","Esquina Libertad","Ay ay ay","Ando ganas (llora llora)","Tan solo","Cancheros","Genius","Los mocosos","Verano del '92","Como Alí","Pistolas","Fumigator","Bicho de ciudad","El balneario de los doctores crotos","El farolito","Finale","Himno Nacional Argentino","Intro Maradó","Maradó"]},{"artist":"Los Piojos","year":2024,"month":12,"day":18,"venue":"Estadio Ciudad de La Plata, La Plata, Argentina","tour":"","songs":["Luz de marfil","Motumbo","Labios de seda","Civilización","Media caña","Fantasma","Difícil","Morella","Reggae rojo y negro","Sudestada","Arco","Chac tu chac","Yira yira","Ay ay ay","Muy despacito","Agua","Tan solo","Llévatelo","Verano del '92","Como Alí","Intro Maradó","Maradó","Fumigator","Muévelo","Pacífico","El farolito","Finale","Himno Nacional Argentino","Cruel"]},{"artist":"Los Piojos","year":2024,"month":12,"day":21,"venue":"Estadio Ciudad de La Plata, La Plata, Argentina","tour":"","songs":["Fantasma","Como Alí","Manjar","Canción de cuna","Vine hasta aquí","Luz de marfil","Difícil","Morella","Reggae rojo y negro","Sudestada","Arco","Desde lejos no se ve","Ay ay ay","A veces","Buenos tiempos","Cancheros","Ximenita","Tan solo","Llévatelo","Verano del '92","Bicho de ciudad","Pistolas","Fumigator","Pacífico","Intro Maradó","Maradó","Muévelo","El farolito / La rubia tarada","Y quemás","Himno Nacional Argentino"]},{"artist":"Los Piojos","year":2024,"month":12,"day":22,"venue":"Estadio Ciudad de La Plata, La Plata, Argentina","tour":"","songs":["Pacífico","Ruleta","Hoy es hoy","Vine hasta aquí","María y José","Buenos días, Palomar","Dientes de cordero","Luz de marfil","Entrando en tu ciudad","Sudestada","Te diría","Yira yira","Ay ay ay","Angelito","Taxi Boy","Genius","Tan solo","Los mocosos","Verano del '92","Zapatos de gamuza azul","Bicho de ciudad","Intro Maradó","Maradó","Fumigator","No parés","El balneario de los doctores crotos","Cruel","El farolito / La rubia tarada","La luna y la cabra","Himno Nacional Argentino","Babilonia"]},{"artist":"Los Piojos","year":2025,"month":1,"day":25,"venue":"Estadio Ciudad de La Plata, La Plata, Argentina","tour":"","songs":["Esquina Libertad","Motumbo","Fantasma","Amor de perros","Vine hasta aquí","Luz de marfil","Ruleta","Morella","Entrando en tu ciudad","Sudestada","Olvidate (ya ves)","Yira yira","Chac tu chac","Ay ay ay","Quemado","Taxi Boy","Genius","Tan solo","Cruel","Verano del '92","Zapatos de gamuza azul","Intro Maradó","Maradó","Bicho de ciudad","Fumigator","Como Alí","Pacífico","Pistolas","El farolito","Arco II","Himno Nacional Argentino"]},{"artist":"Los Piojos","year":2025,"month":1,"day":26,"venue":"Estadio Ciudad de La Plata, La Plata, Argentina","tour":"","songs":["Llévatelo","Hoy es hoy","María y José","Bicho de ciudad","Difícil","Labios de seda","Luz de marfil","Dientes de cordero","Reggae rojo y negro","Sudestada","Desde lejos no se ve","Te diría","Olvidate (ya ves)","Ay ay ay","Todo pasa","Cancheros","Intro Maradó","Maradó","Tan solo","Los mocosos","Verano del '92","Pega-Pega","El balneario de los doctores crotos","Fumigator","Pensar en nada","Como Alí","Pacífico","Muévelo","El farolito / La rubia tarada","Murguita","Himno Nacional Argentino","Genius"]},{"artist":"Los Piojos","year":2025,"month":2,"day":16,"venue":"Escenario Sur","tour":"","songs":["Arco / Te diría / Yira yira","Vine hasta aquí","Difícil","Ruleta","Motumbo","Luz de marfil","Sudestada","Llévatelo","Desde lejos no se ve","Ay ay ay","Tan solo","Shup-shup","Genius","Como Alí","El balneario de los doctores crotos","Bicho de ciudad","Pacífico","Verano del '92","Intro Maradó","Maradó","Muévelo","El farolito / La rubia tarada","Cruel","Finale","Himno Nacional Argentino"]},{"artist":"Los Piojos","year":2025,"month":4,"day":13,"venue":"Tecnópolis, Villa Martelli, Argentina","tour":"","songs":["Desde lejos no se ve","Chac tu chac","Babilonia","Yira yira","Motumbo","Civilización","Vine hasta aquí","Luz de marfil","Entrando en tu ciudad","Sudestada","Te diría","Ay ay ay","Ando ganas (llora llora)","Tan solo","Es sólo rock & roll (It's Only Rock & Roll)","Pistolas","Como Alí","Ruleta","Sábado noche","Pacífico","Bicho de ciudad","Intro Maradó","Maradó","Muévelo","El farolito","Cruel","Y quemás","Himno Nacional Argentino"]},{"artist":"Los Piojos","year":2025,"month":4,"day":26,"venue":"Hipódromo Parque de La Independencia, Rosario, Argentina","tour":"","songs":["Llévatelo","María y José","Desde lejos no se ve","Bicho de ciudad","Difícil","Unbekannt","Luz de marfil","Vine hasta aquí","Pistolas","Entrando en tu ciudad","Sudestada","Te diría","Taxi Boy","Ay ay ay","Cancheros","Muy despacito","Tan solo","Es sólo rock & roll (It's Only Rock & Roll)","Genius","Como Alí","Ruleta","Pacífico","Morella","Muévelo","El farolito","Cruel","Finale","Himno Nacional Argentino"]},{"artist":"Los Piojos","year":2025,"month":5,"day":3,"venue":"Teatro Griego Frank Romero Day, Mendoza, Argentina","tour":"","songs":["Ruleta","Arco","Yira yira","Vine hasta aquí","Civilización","Difícil","Labios de seda","Luz de marfil","Fantasma","Pistolas","Reggae rojo y negro","Sudestada","Babilonia","Ay ay ay","Por una cabeza","Agua","Shup-shup","Tan solo","Los mocosos","Verano del '92","Como Alí","Bicho de ciudad","Intro Maradó","Maradó","El balneario de los doctores crotos","Juana Azurduy","Muévelo","El farolito","Cruel","Y quemás","Himno Nacional Argentino"]},{"artist":"Los Piojos","year":2025,"month":5,"day":10,"venue":"Playón Mario Alberto Kempes","tour":"","songs":["Fantasma","Desde lejos no se ve","Ruleta","Civilización","Difícil","Media caña","Vine hasta aquí","Luz de marfil","Reggae rojo y negro","Sudestada","Te diría","Ay ay ay","Todo pasa","Buenos tiempos","Tan solo","Es sólo rock & roll (It's Only Rock & Roll)","Genius","Pistolas","Verano del '92","Como Alí","No parés","Pacífico","Don't Say Tomorrow / La gallina turuleca / Hola Don Pepito","Bicho de ciudad","Muévelo","El farolito","Cruel","Murguita","Himno Nacional Argentino"]},{"artist":"Los Piojos","year":2025,"month":5,"day":24,"venue":"Parque de la Ciudad, Buenos Aires, Argentina","tour":"","songs":["Unbekannt","El balneario de los doctores crotos","Babilonia","Vine hasta aquí","La luna y la cabra","Langostas","Luz de marfil","Pistolas","Reggae rojo y negro","Sudestada","Vals inicial","Te diría","Ay ay ay","Blues del traje gris","Angelito","Tan solo","Buenos tiempos","Verano del '92","Don't Say Tomorrow / La gallina turuleca / Hola Don Pepito","Merecido","Fumigator","Pacífico","Canción de cuna","Marcha de San Lorenzo","Muévelo","Juana Azurduy","El farolito","Cruel","Arco II","Himno Nacional Argentino"]},{"artist":"Los Piojos","year":2025,"month":5,"day":25,"venue":"Parque de la Ciudad, Buenos Aires, Argentina","tour":"","songs":["Unbekannt","Desde lejos no se ve","Ruleta","Difícil","Media caña","Langostas","Fantasma","Pistolas","Entrando en tu ciudad","Vals inicial","Sudestada","Llévatelo","Ay ay ay","Manise","Tan solo","Shup-shup","Es sólo rock & roll (It's Only Rock & Roll)","Olvidate (ya ves)","Como Alí","Merecido","Intro Maradó","Maradó","Muévelo","Morella","Bicho de ciudad","Motumbo","Genius","Juana Azurduy","El farolito","El balneario de los doctores crotos","Cruel","Finale","Himno Nacional Argentino"]},{"artist":"Los Piojos","year":2025,"month":6,"day":21,"venue":"Estadio River Plate, Buenos Aires, Argentina","tour":"","songs":["Llévatelo","Te diría","Desde lejos no se ve","Difícil","Media caña","San Jauretche","Vine hasta aquí","Luz de marfil","Pistolas","Entrando en tu ciudad","Sudestada","Vals inicial","Yira yira","Ay ay ay","Quemado","Cancheros","Tan solo","Shup-shup","Verano del '92","Como Alí","Bicho de ciudad","Paciencia","Ruleta","Unbekannt","Genius","El balneario de los doctores crotos","Juana Azurduy","El farolito","Y quemás","Himno Nacional Argentino"]},{"artist":"Los Piojos","year":2025,"month":6,"day":22,"venue":"Estadio River Plate, Buenos Aires, Argentina","tour":"","songs":["Arco","María y José","Hoy es hoy","Canción de cuna","Merecido","San Jauretche","Fantasma","Luz de marfil","Pistolas","Reggae rojo y negro","Sudestada","Vals inicial","Desde lejos no se ve","Ay ay ay","Ando ganas (llora llora)","Taxi Boy","Tan solo","Los mocosos","Intro Maradó","Maradó","Paciencia","Como Alí","Ruleta","Morella","Bicho de ciudad","Muévelo","Pacífico","Juana Azurduy","El farolito","Cruel","Genius","Babilonia","Buenos días, Palomar","Himno Nacional Argentino"]}];
 
-const INLINE_ALBUMS={"artist":"Los Piojos","albums":[{"title":"Chac Tu Chac","color":"#3a6080","tracks":["Llévatelo","Chac Tu Chac","Tan Solo","Cancheros","Los Mocosos","A Veces","Blues del Traje Gris","Yira Yira","Pega-Pega","Siempre Bajando","Cruel"]},{"title":"Ay Ay Ay","color":"#c41616","tracks":["Arco","Babilonia","Ay Ay Ay","Pistolas","Angelito","Manise","Ximenita","Ando Ganas (Llora Llora)","Fumigator","Muy Despacito","Es Sentir","Te Diría","Arco II"]},{"title":"Tercer Arco","color":"#c8a800","tracks":["Esquina Libertad","Taxi Boy","El Farolito","Shup-shup","Al Atardecer","Que Decís","Don't Say Tomorrow","Todo Pasa","Intro Maradó","Maradó","Gris","Muévelo","Verano del '92"]},{"title":"Azul","color":"#1a5fb4","tracks":["Vals Inicial","El Balneario de los Doctores Crotos","Genius","A Ver Cuándo","Desde Lejos No Se Ve","Sucio Can","El Rey del Blues","Y Quemás","Agua","Buenos Tiempos","Go Negro Go","Uoh Pa Pa Pa","Quemado","Murguita","Olvidate","Finale"]},{"title":"Verde Paisaje del Infierno","color":"#4a8c3f","tracks":["María y José","Labios de Seda","Luz de Marfil","Vine Hasta Aquí","Globalización","Fijate","Reggae Rojo y Negro","Ruleta","Morella","La Luna y la Cabra","Media Caña","Mi Babe","Merecido","San Jauretche"]},{"title":"Maquina de Sangre","color":"#c05c2c","tracks":["Fantasma","Guadalupe","Como Alí","Langostas","Sudestada","Motumbo","Entrando en Tu Ciudad","Amor de Perros","Solo y en Paz","Dientes de Cordero","Al Desierto","Canción de Cuna","No Parés"]},{"title":"Civilizacion","color":"#a08a50","tracks":["Manjar","Pacífico","Civilización","Bicho de Ciudad","Pollo Viejo","Cruces y Flores","Difícil","Un Buen Día","Basta de Penas","Unbekannt","Salitral","Hoy es Hoy","Buenos Días, Palomar"]},{"title":"Covers - Inéditos - Otros","color":"#6b4c8a","tracks":["Paciencia", "Roll Over Beethoven","Blues Del Gato Sarnoso","The Little Red Rooster","Blues De San Martín","Zapatos De Gamuza Azul","Nada","I Saw Her Standing There","Little Red Rooster","Balanceo Del Rock","Around And Around","La Cumparsita","Never Coming Back","Honky Tonk Women","Ay, Qué Maravilla","Chactuchac","Let's Spend The Night Together","Muñeca","Batucada","Beast Of Burden","Tutti Frutti","Sábado A La Noche","Intermezzo","La Gallina Turuleca","Carol","When The Whip Comes Down","You Gotta Move","Es Sólo Rock & Roll (It's Only Rock & Roll)","Sympathy For The Devil","Don't Turn Blue","Los Cinco Magníficos","Shattered","Por Una Cabeza","Himno Nacional Argentino","Some Girls","Let It Bleed","A La Huella","Extraña Soledad","Spiritus","Sed Viña","Longchamps Boogie","Pensar En Nada","La Rubia Tarada","Brilla (Shine)","Rareza Piojosa","El Burrito","Par Mil","Get Up (I Feel Like Being A) Sex Machine","De Puro Guapo","Banquero Blues","Descortés","Hola Don Pepito","El Viejo","Llega El Tren","De Puro Curda","Rock De La Calle","Black Limousine","Día Luna... Día Pena","Hey Jude","The Passenger","Debede","Sex Machine","Silver Moon","Superstition","Sábado Noche","Juana Azurduy","Marcha De San Lorenzo"]}]};
+const INLINE_ALBUMS={"artist":"Los Piojos","albums":[{"title":"Chac Tu Chac","color":"#1e2830","tracks":["Llévatelo","Chac Tu Chac","Tan Solo","Cancheros","Los Mocosos","A Veces","Blues del Traje Gris","Yira Yira","Pega-Pega","Siempre Bajando","Cruel"]},{"title":"Ay Ay Ay","color":"#c41616","tracks":["Arco","Babilonia","Ay Ay Ay","Pistolas","Angelito","Manise","Ximenita","Ando Ganas (Llora Llora)","Fumigator","Muy Despacito","Es Sentir","Te Diría","Arco II"]},{"title":"Tercer Arco","color":"#c8a800","tracks":["Esquina Libertad","Taxi Boy","El Farolito","Shup-shup","Al Atardecer","Que Decís","Don't Say Tomorrow","Todo Pasa","Intro Maradó","Maradó","Gris","Muévelo","Verano del '92"]},{"title":"Azul","color":"#1a5fb4","tracks":["Vals Inicial","El Balneario de los Doctores Crotos","Genius","A Ver Cuándo","Desde Lejos No Se Ve","Sucio Can","El Rey del Blues","Y Quemás","Agua","Buenos Tiempos","Go Negro Go","Uoh Pa Pa Pa","Quemado","Murguita","Olvidate","Finale"]},{"title":"Verde Paisaje del Infierno","color":"#4a8c3f","tracks":["María y José","Labios de Seda","Luz de Marfil","Vine Hasta Aquí","Globalización","Fijate","Reggae Rojo y Negro","Ruleta","Morella","La Luna y la Cabra","Media Caña","Mi Babe","Merecido","San Jauretche"]},{"title":"Maquina de Sangre","color":"#c05c2c","tracks":["Fantasma","Guadalupe","Como Alí","Langostas","Sudestada","Motumbo","Entrando en Tu Ciudad","Amor de Perros","Solo y en Paz","Dientes de Cordero","Al Desierto","Canción de Cuna","No Parés"]},{"title":"Civilizacion","color":"#a08a50","tracks":["Manjar","Pacífico","Civilización","Bicho de Ciudad","Pollo Viejo","Cruces y Flores","Difícil","Un Buen Día","Basta de Penas","Unbekannt","Salitral","Hoy es Hoy","Buenos Días, Palomar"]},{"title":"Covers - Inéditos - Otros","color":"#6b4c8a","tracks":["Me equivoqué", "Paciencia", "Roll Over Beethoven","Blues Del Gato Sarnoso","The Little Red Rooster","Blues De San Martín","Zapatos De Gamuza Azul","Nada","I Saw Her Standing There","Little Red Rooster","Balanceo Del Rock","Around And Around","La Cumparsita","Never Coming Back","Honky Tonk Women","Ay, Qué Maravilla","Chactuchac","Let's Spend The Night Together","Muñeca","Batucada","Beast Of Burden","Tutti Frutti","Sábado A La Noche","Intermezzo","La Gallina Turuleca","Carol","When The Whip Comes Down","You Gotta Move","Es Sólo Rock & Roll (It's Only Rock & Roll)","Sympathy For The Devil","Don't Turn Blue","Los Cinco Magníficos","Shattered","Por Una Cabeza","Himno Nacional Argentino","Some Girls","Let It Bleed","A La Huella","Extraña Soledad","Spiritus","Sed Viña","Longchamps Boogie","Pensar En Nada","La Rubia Tarada","Brilla (Shine)","Rareza Piojosa","El Burrito","Par Mil","Get Up (I Feel Like Being A) Sex Machine","De Puro Guapo","Banquero Blues","Descortés","Hola Don Pepito","El Viejo","Llega El Tren","De Puro Curda","Rock De La Calle","Black Limousine","Día Luna... Día Pena","Hey Jude","The Passenger","Debede","Sex Machine","Silver Moon","Superstition","Sábado Noche","Juana Azurduy","Marcha De San Lorenzo"]}]};
 
 // ─────────────────────────────────────────────
 // CONSTANTS
@@ -572,6 +626,10 @@ const numFmt=n=>Math.round(n).toLocaleString('es-AR');
 // ─────────────────────────────────────────────
 let allShows=[], albumsData={}, sel=new Set(), charts={};
 let currentOriginIdx=0;
+let MODE='primavera';              // 'primavera' | 'historia'
+let primaveraShows=[];             // los 16 shows curados de la reunión
+let historyShows=null;             // lazy-load de Setlists_Piojos.json
+let currentRecitales=[];           // dataset actualmente renderizado (para cruces canción↔shows)
 
 // ─────────────────────────────────────────────
 // INIT
@@ -586,8 +644,10 @@ async function init(){
     allShows=INLINE_SHOWS;
     albumsData=INLINE_ALBUMS;
   }
+  primaveraShows=allShows;
   buildSelector();
   buildTimeline();
+  buildModeSwitch();
   const h=location.hash;
   if(h.startsWith('#recitales=')){
     h.slice(7).split(',').map(Number).filter(n=>n>=0&&n<allShows.length).forEach(i=>sel.add(i));
@@ -612,7 +672,12 @@ function buildSelector(){
     c.onclick=()=>toggleSel(i);
     grid.appendChild(c);
   });
-  document.getElementById('btn-toggle').onclick=()=>document.getElementById('sel-panel').classList.toggle('open');
+  document.getElementById('btn-toggle').onclick=()=>{
+    const panel=document.getElementById('sel-panel');
+    const opened=panel.classList.toggle('open');
+    // Al abrir, llevar el panel a la vista (si no, queda arriba fuera del viewport)
+    if(opened) requestAnimationFrame(()=>panel.scrollIntoView({behavior:'smooth',block:'start'}));
+  };
   document.getElementById('btn-all').onclick=()=>{allShows.forEach((_,i)=>sel.add(i));refreshSel();renderAll(getActive())};
   document.getElementById('btn-none').onclick=()=>{sel.clear();refreshSel();renderAll(allShows)};
   document.getElementById('btn-ver').onclick=()=>document.getElementById('sel-panel').classList.remove('open');
@@ -667,6 +732,59 @@ function buildTimeline(){
     d.onclick=()=>toggleSel(i);
     tl.appendChild(d);
   });
+}
+
+// ─────────────────────────────────────────────
+// MODE SWITCH (Primavera 24-25 ↔ Toda la historia)
+// ─────────────────────────────────────────────
+function buildModeSwitch(){
+  document.querySelectorAll('#mode-switch button').forEach(b=>{
+    b.onclick=()=>setMode(b.dataset.mode);
+  });
+}
+
+function setMode(mode){
+  if(mode===MODE) return;
+  MODE=mode;
+  document.querySelectorAll('#mode-switch button').forEach(b=>{
+    b.classList.toggle('active',b.dataset.mode===mode);
+  });
+
+  const primControls=document.getElementById('prim-controls');
+  const timelineWrap=document.querySelector('.timeline-wrap');
+  const headerMeta=document.getElementById('header-meta');
+
+  if(mode==='historia'){
+    // limpiar cualquier selección personal y ocultar UI de primavera
+    sel.clear(); refreshSel();
+    document.getElementById('sel-panel').classList.remove('open');
+    if(primControls) primControls.style.display='none';
+    if(timelineWrap) timelineWrap.style.display='none';
+
+    if(!historyShows){
+      historyShows=(window.HISTORY_SHOWS||[]).slice();
+    }
+    allShows=historyShows;
+    const yrs=historyShows.map(s=>s.year);
+    const y0=Math.min(...yrs), y1=Math.max(...yrs);
+    document.getElementById('header-title').innerHTML='<em>TODA LA HISTORIA</em>';
+    if(headerMeta) headerMeta.innerHTML=`${y0} – ${y1} · <span class="pj"><em>Los Piojos</em></span>`;
+    document.getElementById('hero-title').innerHTML='<em>TODA<br>LA HISTORIA</em>';
+    document.getElementById('hero-sub').innerHTML=
+      `${y0} – ${y1} · ${historyShows.length} recitales · <span class="pj"><em>Los Piojos</em></span>`;
+    renderAll(historyShows);
+  } else {
+    allShows=primaveraShows;
+    if(primControls) primControls.style.display='';
+    if(timelineWrap) timelineWrap.style.display='';
+    document.getElementById('header-title').innerHTML='<em>PRIMAVERA PIOJOSA</em>';
+    if(headerMeta) headerMeta.innerHTML='Dic 2024 – Jun 2025 · <span class="pj"><em>Los Piojos</em></span>';
+    document.getElementById('hero-title').innerHTML='<em>PRIMAVERA<br>PIOJOSA</em>';
+    document.getElementById('hero-sub').innerHTML=
+      'Dic 2024 – Jun 2025 · 16 recitales · <span class="pj"><em>Los Piojos</em></span>';
+    renderAll(primaveraShows);
+  }
+  window.scrollTo({top:0,behavior:'smooth'});
 }
 
 // ─────────────────────────────────────────────
@@ -740,7 +858,19 @@ function renderAll(recitales){
   const main=document.getElementById('main');
   document.getElementById('loader').style.display='none';
   [...main.children].forEach(c=>{if(c.id!=='loader') c.remove()});
+  currentRecitales=recitales;
   const d=compute(recitales);
+
+  if(MODE==='historia'){
+    main.appendChild(renderStats(d,recitales));
+    main.appendChild(renderShowsPerYear(recitales));
+    main.appendChild(renderTop15(d));
+    main.appendChild(renderOnce(d));
+    main.appendChild(renderAlbumDist(d));
+    main.appendChild(renderHistoryArchive(recitales));
+    return;
+  }
+
   if(sel.size>0){
     const b=el('div','mode-banner');
     b.innerHTML=`Mostrando <strong>Tu Primavera</strong> — ${sel.size} show${sel.size!==1?'s':''} seleccionado${sel.size!==1?'s':''}`;
@@ -750,12 +880,15 @@ function renderAll(recitales){
   main.appendChild(renderGallery(recitales));
   main.appendChild(renderArranque(recitales,d));
   main.appendChild(renderTop15(d));
-  main.appendChild(renderOnce(d));
   main.appendChild(renderAlbumDist(d));
-  main.appendChild(renderHeatmap(recitales));
   main.appendChild(renderPopularity(recitales));
   main.appendChild(renderTourRoute(recitales));
-  main.appendChild(renderNever(d));
+  // "una sola vez" y "no sonaron" solo tienen sentido sobre toda la gira,
+  // no dentro de una selección personal (ver punto 3): se ocultan con selección
+  if(sel.size===0){
+    main.appendChild(renderOnce(d));
+    main.appendChild(renderNever(d));
+  }
   if(sel.size>0) main.appendChild(renderTuPrimavera(recitales,d));
 }
 
@@ -765,17 +898,96 @@ function el(tag,cls){const e=document.createElement(tag);if(cls)e.className=cls;
 function renderStats(d,recitales){
   const sec=sec_('Los números');
   const g=el('div','stats-grid');
+  const lastStat=MODE==='historia'
+    ? [new Set(recitales.map(s=>s.year)).size,'Años en escena']
+    : [d.cities,'Ciudades'];
   [
     [recitales.length,'recitales'],
     [numFmt(d.total),'Canciones tocadas'],
     [d.unique,'Canciones únicas'],
-    [d.cities,'Ciudades'],
+    lastStat,
   ].forEach(([n,l])=>{
     const c=el('div','stat-card');
     c.innerHTML=`<div class="stat-num">${n}</div><div class="stat-lbl">${l}</div>`;
     g.appendChild(c);
   });
   sec.appendChild(g);
+  return sec;
+}
+
+// ─── SHOWS POR AÑO (solo historia) ───
+function renderShowsPerYear(recitales){
+  const sec=sec_('Shows por año');
+  const byYear=new Map();
+  recitales.forEach(s=>{
+    if(!byYear.has(s.year)) byYear.set(s.year,{total:0,set:0});
+    const o=byYear.get(s.year);o.total++;
+    if(s.songs&&s.songs.length) o.set++;
+  });
+  const years=[...byYear.entries()].sort((a,b)=>a[0]-b[0]);
+  const mx=Math.max(...years.map(([,o])=>o.total));
+  const totalSet=recitales.filter(s=>s.songs&&s.songs.length).length;
+
+  const sub=el('p');sub.style.cssText='font-size:.82rem;color:var(--text-dim);margin-bottom:14px';
+  sub.innerHTML=`${recitales.length} recitales en total · <span style="color:var(--gold)">${totalSet}</span> con setlist documentado.`;
+  sec.appendChild(sub);
+
+  const list=el('div','bar-list');
+  years.forEach(([y,o])=>{
+    const row=el('div','bar-row');
+    const wpct=Math.max(6,o.total/mx*100);
+    row.innerHTML=`
+      <span class="bar-name" style="flex:0 0 54px">${y}</span>
+      <div class="bar-track-wrap">
+        <div class="bar-track" style="background:var(--gold-dim);width:${wpct}%"></div>
+      </div>
+      <span class="bar-count" style="color:var(--text-dim);margin-left:9px;min-width:24px">${o.total}</span>`;
+    list.appendChild(row);
+  });
+  sec.appendChild(list);
+  return sec;
+}
+
+// ─── ARCHIVO NAVEGABLE (solo historia) ───
+function renderHistoryArchive(recitales){
+  const sec=sec_('El <em>archivo</em>');
+  const sub=el('p');sub.style.cssText='font-size:.82rem;color:var(--text-dim);margin-bottom:16px';
+  sub.textContent='Todos los shows por año. Tocá uno con setlist para ver qué se tocó.';
+  sec.appendChild(sub);
+
+  const byYear=new Map();
+  recitales.forEach(s=>{
+    if(!byYear.has(s.year)) byYear.set(s.year,[]);
+    byYear.get(s.year).push(s);
+  });
+  const years=[...byYear.entries()].sort((a,b)=>b[0]-a[0]); // más nuevo primero
+
+  years.forEach(([y,shows])=>{
+    shows.sort((a,b)=>(a.month-b.month)||(a.day-b.day));
+    const withSet=shows.filter(s=>s.songs&&s.songs.length).length;
+    const yEl=el('div','arch-year');
+    const hdr=el('button','arch-year-hdr');
+    hdr.innerHTML=`<span>${y}</span>
+      <span class="arch-year-meta">${shows.length} show${shows.length!==1?'s':''}${withSet<shows.length?` · ${withSet} con setlist`:''}</span>
+      <span class="arch-chev">▾</span>`;
+    hdr.onclick=()=>yEl.classList.toggle('open');
+    yEl.appendChild(hdr);
+
+    const showsWrap=el('div','arch-shows');
+    shows.forEach(s=>{
+      const hasSet=s.songs&&s.songs.length;
+      const city=VENUE_SHORT[s.venue]||(s.venue||'').split(',')[0]||'Lugar sin datos';
+      const row=el('div','arch-show '+(hasSet?'has-set':'no-set'));
+      row.innerHTML=`
+        <span class="arch-show-date">${s.day} ${MONTHS_S[s.month]}</span>
+        <span class="arch-show-venue" title="${s.venue||''}">${city}</span>
+        <span class="arch-show-count">${hasSet?`${splitSongs(s.songs).length} temas ›`:'sin setlist'}</span>`;
+      if(hasSet) row.onclick=()=>openShowModal(s,allShows.indexOf(s));
+      showsWrap.appendChild(row);
+    });
+    yEl.appendChild(showsWrap);
+    sec.appendChild(yEl);
+  });
   return sec;
 }
 
@@ -922,7 +1134,9 @@ function renderTop15(d){
   const mx=d.top15[0]?.count||1;
   d.top15.forEach((item,idx)=>{
     const color=item.alb?item.alb.color:'#555';
-    const row=el('div','bar-row');
+    const row=el('div','bar-row clickable');
+    row.title=`Ver en qué shows sonó "${item.display}"`;
+    row.onclick=()=>openSongModal(item.display);
     row.innerHTML=`
       <span class="bar-rank">${idx+1}</span>
       ${item.alb?`<img class="bar-logo" src="${logoPath(item.alb.title)}" title="${item.alb.title}" onerror="this.style.display='none'">`:`<span class="bar-logo-blank"></span>`}
@@ -958,13 +1172,17 @@ function renderTop15(d){
 function renderOnce(d){
   const sec=sec_('Tocadas una sola vez');
   const sub=el('p');sub.style.cssText='font-size:.82rem;color:var(--text-dim);margin-bottom:12px';
-  sub.textContent=`${d.once.length} canciones sonaron una única vez en toda la gira.`;
+  sub.textContent=MODE==='historia'
+    ?`${d.once.length} canciones sonaron una única vez en toda la historia documentada.`
+    :`${d.once.length} canciones sonaron una única vez en toda la gira.`;
   sec.appendChild(sub);
   const tags=el('div','tag-list');
   d.once.forEach(item=>{
     const color=item.alb?item.alb.color:'#555';
-    const t=el('span','song-tag');
+    const t=el('span','song-tag clickable');
     t.style.cssText=`background:${color}1a;border-color:${color}44;color:var(--text)`;
+    t.title=`Ver en qué show sonó "${item.display}"`;
+    t.onclick=()=>openSongModal(item.display);
     t.innerHTML=(item.alb?`<img class="tag-logo" src="${logoPath(item.alb.title)}" onerror="this.style.display='none'">`:'')+item.display;
     tags.appendChild(t);
   });
@@ -1072,116 +1290,14 @@ function renderPopularity(shows){
   return sec;
 }
 
-// ─── HEATMAP (álbumes/canciones = filas, shows = columnas) ───
-function renderHeatmap(shows){
-  const sec=sec_('Shows <em>×</em> canciones');
-  if(!shows.length) return sec;
-  const albums=albumsData.albums||[];
-
-  // Colectar canciones únicas y sets por show
-  const dispMap=new Map();
-  const showSets=shows.map(s=>{
-    const set=new Set();
-    splitSongs(s.songs).forEach(raw=>{
-      const n=norm(raw);
-      set.add(n);
-      if(!dispMap.has(n)) dispMap.set(n,{display:raw,alb:matchAlbum(raw,albums)});
-    });
-    return set;
-  });
-
-  // Agrupar canciones por álbum en orden del catálogo
-  const groups=[];
-  const placed=new Set();
-  for(const alb of albums){
-    const albSongs=[];
-    for(const track of alb.tracks){
-      const nt=norm(track);
-      for(const [n,info] of dispMap){
-        if(placed.has(n)) continue;
-        if(n===nt||n.startsWith(nt+' ')||nt.startsWith(n+' ')||n.startsWith(nt+'(')||nt.startsWith(n+'(')){
-          albSongs.push({norm:n,display:info.display,alb:info.alb});
-          placed.add(n);break;
-        }
-      }
-    }
-    if(albSongs.length) groups.push({title:alb.title,color:alb.color,songs:albSongs});
-  }
-  const unmatched=[];
-  for(const [n,info] of dispMap) if(!placed.has(n)) unmatched.push({norm:n,display:info.display,alb:info.alb});
-  if(unmatched.length) groups.push({title:'Otros',color:'#555',songs:unmatched});
-
-  const wrap=el('div','heatmap-wrap');
-  const table=document.createElement('table');
-  table.className='heatmap-table';
-
-  // ── Header: corner + una columna por show ────────────────────────────────
-  const thead=document.createElement('thead');
-  const hrow=document.createElement('tr');
-  const corner=document.createElement('th');
-  corner.style.cssText='position:sticky;top:0;left:0;z-index:4;background:var(--bg2)';
-  hrow.appendChild(corner);
-  shows.forEach(s=>{
-    const th=document.createElement('th');
-    th.className='heatmap-th';
-    th.textContent=`${s.day}/${s.month}`;
-    th.title=`${fmtDate(s.year,s.month,s.day)} · ${VENUE_SHORT[s.venue]||s.venue}`;
-    hrow.appendChild(th);
-  });
-  thead.appendChild(hrow);
-  table.appendChild(thead);
-
-  // ── Body: álbum header + canciones como filas ────────────────────────────
-  const tbody=document.createElement('tbody');
-  groups.forEach(group=>{
-    // Fila separadora de álbum
-    const sepRow=document.createElement('tr');
-    sepRow.className='heatmap-alb-hdr';
-    const sepTd=document.createElement('td');
-    sepTd.colSpan=shows.length+1;
-    sepTd.style.color=group.color;
-    sepTd.textContent=group.title;
-    sepRow.appendChild(sepTd);
-    tbody.appendChild(sepRow);
-
-    group.songs.forEach(song=>{
-      const row=document.createElement('tr');
-      const nameTd=document.createElement('td');
-      nameTd.className='heatmap-row-label';
-      nameTd.textContent=song.display;
-      nameTd.title=song.display;
-      row.appendChild(nameTd);
-
-      shows.forEach((s,i)=>{
-        const td=document.createElement('td');
-        td.className='heatmap-cell';
-        const dot=document.createElement('div');
-        dot.className='heatmap-dot';
-        if(showSets[i].has(song.norm)){
-          dot.style.background=song.alb?.color||group.color;
-          dot.title=`${song.display} · ${fmtDate(s.year,s.month,s.day)}`;
-        } else {
-          dot.style.background='#1a1a1a';
-        }
-        td.appendChild(dot);
-        row.appendChild(td);
-      });
-      tbody.appendChild(row);
-    });
-  });
-
-  table.appendChild(tbody);
-  wrap.appendChild(table);
-  sec.appendChild(wrap);
-  return sec;
-}
-
 // ─── NEVER PLAYED ───
 function renderNever(d){
   const sec=sec_('Las que no sonaron');
   const total=Object.values(d.never).reduce((s,{ns})=>s+ns.length,0);
   const sub=el('p');sub.style.cssText='font-size:.82rem;color:var(--text-dim);margin-bottom:18px';
-  sub.textContent=`${total} canciones de los álbumes oficiales no sonaron en esta vuelta.`;
+  sub.textContent=MODE==='historia'
+    ?`${total} canciones de los álbumes oficiales no aparecen en ningún setlist registrado.`
+    :`${total} canciones de los álbumes oficiales no sonaron en esta vuelta.`;
   sec.appendChild(sub);
   Object.entries(d.never).forEach(([title,{alb,ns}])=>{
     const wrap=el('div','never-album');
@@ -1269,31 +1385,32 @@ function renderTuPrimavera(recitales,d){
   const sec=sec_('Tu <em>Primavera Piojosa</em>');
   const pad=n=>String(n).padStart(2,'0');
 
-  // Canción más escuchada
-  const topSong=d.sorted[0];
-
   // Km desde origen actual
   const [,lat,lng]=ORIGIN_CITIES[currentOriginIdx];
   const totalKm=Math.round(recitales.reduce((sum,s)=>{
     const co=VENUE_COORDS[s.venue];return co?sum+haversine([lat,lng],co):sum;
   },0));
 
-  // Índice Piojoso
-  const pctShows=recitales.length/allShows.length;
-  const popScores=recitales.map(s=>{
-    const k=`${s.year}-${pad(s.month)}-${pad(s.day)}`;
-    return SHOW_POPULARITY[k];
-  }).filter(v=>v!=null);
-  const avgPop=popScores.length?popScores.reduce((a,b)=>a+b,0)/popScores.length:null;
-  const popComp=avgPop!=null?1-(avgPop-POP_MIN)/(POP_MAX-POP_MIN):0.5;
-  const uniqueVenues=new Set(recitales.map(s=>s.venue)).size;
-  const totalVenues=new Set(allShows.map(s=>s.venue)).size;
-  const divComp=uniqueVenues/totalVenues;
-  const score=Math.min(100,Math.round(pctShows*40+popComp*30+divComp*30));
-  const scoreLbl=score>=90?'Piojoso eterno':score>=70?'Piojoso de cepa':score>=40?'Piojoso de ley':'Piojoso de alma';
+  // La joya que te tocó: la canción más rara (a nivel de toda la gira) que
+  // sonó en TUS shows. Así cada selección da una carta distinta.
+  const globalCount=new Map();
+  primaveraShows.forEach(sh=>splitSongs(sh.songs).forEach(raw=>{
+    const k=norm(raw);globalCount.set(k,(globalCount.get(k)||0)+1);
+  }));
+  let joya=null,joyaGlobal=Infinity;
+  d.sorted.forEach(item=>{
+    const g=globalCount.get(norm(item.display))??item.count;
+    if(g<joyaGlobal){joyaGlobal=g;joya=item;}
+  });
+  const joyaColor=joya?.alb?.color||'var(--gold)';
+  const joyaAlb=joya?.alb?.title||'';
 
-  const topColor=topSong?.alb?.color||'var(--gold)';
-  const topAlb=topSong?.alb?.title||'';
+  // Tu álbum del tour: el álbum más presente en tu selección
+  const albEntries=[...d.albMap.entries()].filter(([,v])=>v.count>0).sort((a,b)=>b[1].count-a[1].count);
+  const topAlbEntry=albEntries[0];
+  const topAlbTitle=topAlbEntry?topAlbEntry[0]:'—';
+  const topAlbColor=topAlbEntry?topAlbEntry[1].alb.color:'var(--gold)';
+  const topAlbCount=topAlbEntry?topAlbEntry[1].count:0;
 
   const card=el('div','primavera-card');
   card.id='primavera-card';
@@ -1311,16 +1428,16 @@ function renderTuPrimavera(recitales,d){
         <div class="pc-stat-lbl">kilómetros</div>
       </div>
     </div>
-    <div class="pc-song" style="border-left-color:${topColor}">
-      <div class="pc-song-lbl">tu canción del tour</div>
-      <div class="pc-song-name">${topSong?.display||'—'}</div>
-      <div class="pc-song-alb">${topAlb}</div>
+    <div class="pc-song" style="border-left-color:${joyaColor}">
+      <div class="pc-song-lbl">la joya que te tocó</div>
+      <div class="pc-song-name">${joya?.display||'—'}</div>
+      <div class="pc-song-alb">${joyaAlb?joyaAlb+' · ':''}sonó ${joyaGlobal===1?'una sola vez':joyaGlobal+'×'} en toda la Primavera</div>
     </div>
     <div class="pc-score-wrap">
-      <div class="pc-score">${score}</div>
+      <img src="${logoPath(topAlbTitle)}" alt="" style="width:60px;height:60px;object-fit:contain;flex-shrink:0" onerror="this.style.display='none'">
       <div>
-        <div class="pc-score-lbl">${scoreLbl}</div>
-        <div class="pc-score-sub">Índice Piojoso</div>
+        <div class="pc-score-lbl" style="color:${topAlbColor}">${topAlbTitle}</div>
+        <div class="pc-score-sub">tu álbum del tour · ${topAlbCount} temas</div>
       </div>
     </div>
     <div class="pc-footer">hecho con amor desde Ciudad Jardín, El Palomar</div>`;
@@ -1343,6 +1460,62 @@ function renderTuPrimavera(recitales,d){
   dlWrap.appendChild(btn);
   sec.appendChild(dlWrap);
   return sec;
+}
+
+// ─── SONG → SHOWS MODAL ───
+function openSongModal(display){
+  const albums=albumsData.albums||[];
+  const nn=norm(display);
+  const alb=matchAlbum(display,albums);
+  const color=alb?.color||'#888';
+  const hits=currentRecitales.filter(s=>splitSongs(s.songs).some(x=>norm(x)===nn));
+  hits.sort((a,b)=>(a.year-b.year)||(a.month-b.month)||(a.day-b.day));
+
+  const scopeLbl=MODE==='historia'?'en la historia documentada'
+    :(sel.size>0?'en tu selección':'en la Primavera');
+
+  const bg=document.createElement('div');
+  bg.id='song-modal-bg';
+  bg.className='show-modal-bg';
+  const modal=document.createElement('div');
+  modal.className='show-modal';
+  modal.innerHTML=`
+    <button class="modal-close">✕</button>
+    <div class="modal-header">
+      <span class="modal-num">${hits.length}</span>
+      <div>
+        <div class="modal-city">${display}</div>
+        ${alb?`<div class="modal-venue">${alb.title}</div>`:''}
+        <div class="modal-date">${hits.length===1?'sonó 1 vez':'sonó '+hits.length+' veces'} ${scopeLbl}</div>
+      </div>
+    </div>
+    <div class="modal-setlist" id="song-shows"></div>`;
+  bg.appendChild(modal);
+
+  const list=modal.querySelector('#song-shows');
+  if(!hits.length){
+    const r=el('div','modal-song');
+    r.innerHTML='<span class="modal-song-name" style="color:var(--text-dim)">No aparece en esta vista.</span>';
+    list.appendChild(r);
+  }
+  hits.forEach(s=>{
+    const city=VENUE_SHORT[s.venue]||(s.venue||'').split(',')[0]||'—';
+    const row=el('div','modal-song nav');
+    row.innerHTML=`
+      <span class="modal-song-dot" style="background:${color}"></span>
+      <span class="modal-song-name">${s.day} ${MONTHS_S[s.month]} ${s.year} · ${city}</span>
+      <span class="modal-chev">›</span>`;
+    row.onclick=()=>openShowModal(s,allShows.indexOf(s));
+    list.appendChild(row);
+  });
+
+  modal.querySelector('.modal-close').onclick=()=>bg.remove();
+  bg.addEventListener('click',e=>{if(e.target===bg) bg.remove()});
+  document.addEventListener('keydown',function esc(e){
+    if(e.key==='Escape'){bg.remove();document.removeEventListener('keydown',esc)}
+  });
+  document.getElementById('song-modal-bg')?.remove();
+  document.body.appendChild(bg);
 }
 
 // ─── SHOW MODAL ───
