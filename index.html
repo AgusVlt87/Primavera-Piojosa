@@ -23,7 +23,8 @@
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Primavera Piojosa · Los Piojos 2024–2025">
 <meta name="twitter:description" content="Tu gira piojosa en números. Descubrí tu Primavera Piojosa.">
-<meta name="twitter:image" content="https://primavera-piojosa.netlify.app/assets/og-image.jpg">
+<meta name="twitter:image" content="https://primavera-piojosa.netlify.app/assets/
+.jpg">
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -1587,11 +1588,13 @@ async function sharePrimavera(btn){
   if(joya && joya!=='—') text+=`\n💎 La joya que me tocó: ${joya}`;
   if(album && album!=='—') text+=`\n💿 Mi álbum del tour: ${album}`;
 
+  const caption=text+'\n\n'+url;   // pie de foto: texto + link
+
   // feedback visual en el botón
   const orig=btn?btn.textContent:'';
   if(btn){btn.textContent='Generando…';btn.disabled=true;}
 
-  // renderizar la card a imagen
+  // renderizar la card a imagen PNG
   let file=null;
   if(card && window.html2canvas){
     try{
@@ -1602,53 +1605,65 @@ async function sharePrimavera(btn){
   }
   if(btn){btn.textContent=orig;btn.disabled=false;}
 
-  // 1) Share nativo (ideal en mobile): imagen + texto + link a WhatsApp/Twitter/etc.
-  if(navigator.share){
-    const data={title:'Primavera Piojosa',text,url};
-    if(file && navigator.canShare && navigator.canShare({files:[file]})) data.files=[file];
-    try{ await navigator.share(data); return; }
+  // 1) IDEAL (mobile): compartir la FOTO con el texto+link en el pie.
+  //    Clave: NO pasar 'url' aparte — si no, WhatsApp/Twitter descartan la
+  //    imagen y muestran solo la preview del link.
+  if(file && navigator.canShare && navigator.canShare({files:[file]})){
+    try{ await navigator.share({files:[file],text:caption}); return; }
     catch(e){ if(e.name==='AbortError') return; }
   }
-  // 2) Fallback (desktop): menú con destinos
+  // 2) Sin soporte de archivos pero con share nativo: texto + link (tarjeta OG)
+  if(navigator.share){
+    try{ await navigator.share({text,url}); return; }
+    catch(e){ if(e.name==='AbortError') return; }
+  }
+  // 3) Desktop/fallback: bajar la imagen + menú de destinos
   shareFallbackMenu(text,url,file);
 }
 
 function shareFallbackMenu(text,url,file){
   const full=text+'\n'+url;
+  const imgUrl=file?URL.createObjectURL(file):null;
   const bg=el('div','show-modal-bg');bg.id='share-modal-bg';
-  const m=el('div','show-modal');m.style.maxWidth='360px';
+  const m=el('div','show-modal');m.style.maxWidth='380px';
   m.innerHTML=`
     <button class="modal-close">✕</button>
     <div class="modal-header" style="margin-bottom:12px">
       <div>
-        <div class="modal-city" style="font-size:1.4rem">Compartir</div>
-        <div class="modal-venue">Elegí a dónde</div>
+        <div class="modal-city" style="font-size:1.4rem">Compartir tu Primavera</div>
+        <div class="modal-venue">Acá en la compu, WhatsApp/Twitter no dejan adjuntar la foto solos</div>
       </div>
     </div>
+    ${imgUrl?`<img src="${imgUrl}" alt="Tu Primavera Piojosa" style="width:100%;border-radius:10px;border:1px solid var(--border);margin-bottom:14px">`:''}
     <div class="share-opts"></div>
-    <p style="font-size:.68rem;color:var(--text-dim);margin-top:12px;line-height:1.4">
-      En redes se comparte el texto + link. Para incluir la imagen, descargala y adjuntala.
+    <p style="font-size:.72rem;color:var(--text-dim);margin-top:12px;line-height:1.45">
+      <strong style="color:var(--gold)">Cómo compartir la foto:</strong> 1) Descargá la imagen ·
+      2) abrí WhatsApp/Twitter · 3) adjuntá la imagen y pegá el texto (ya copiado).
+      <br>Desde el <strong>celular</strong> se comparte todo junto, automático.
     </p>`;
   bg.appendChild(m);
 
   const opts=m.querySelector('.share-opts');
-  const mk=(label,fn)=>{
-    const b=el('button','btn-sm');
-    b.style.cssText='display:block;width:100%;text-align:left;margin-bottom:8px;padding:11px 14px;font-size:.85rem';
+  const mk=(label,primary,fn)=>{
+    const b=el('button','btn-sm'+(primary?' primary':''));
+    b.style.cssText='display:block;width:100%;text-align:left;margin-bottom:8px;padding:12px 14px;font-size:.86rem';
     b.textContent=label;b.onclick=fn;opts.appendChild(b);
+    return b;
   };
-  mk('🐦  Twitter / X',()=>window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`,'_blank','noopener'));
-  mk('💬  WhatsApp',()=>window.open(`https://wa.me/?text=${encodeURIComponent(full)}`,'_blank','noopener'));
-  mk('✈️  Telegram',()=>window.open(`https://t.me/share/url?url=${encodeURIComponent(url)}&text=${encodeURIComponent(text)}`,'_blank','noopener'));
-  mk('🔗  Copiar texto y link',async(e)=>{
+  if(file) mk('⬇️  Descargar imagen + copiar texto',true,async(e)=>{
+    const a=document.createElement('a');a.download=file.name;a.href=imgUrl;a.click();
+    try{await navigator.clipboard.writeText(full);}catch(_){}
+    e.target.textContent='✓  Imagen bajada · texto copiado';
+  });
+  mk('💬  Abrir WhatsApp (texto + link)',false,()=>window.open(`https://wa.me/?text=${encodeURIComponent(full)}`,'_blank','noopener'));
+  mk('🐦  Abrir Twitter / X (texto + link)',false,()=>window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`,'_blank','noopener'));
+  mk('✈️  Abrir Telegram (texto + link)',false,()=>window.open(`https://t.me/share/url?url=${encodeURIComponent(url)}&text=${encodeURIComponent(text)}`,'_blank','noopener'));
+  mk('🔗  Solo copiar texto y link',false,async(e)=>{
     try{await navigator.clipboard.writeText(full);e.target.textContent='✓  ¡Copiado!';}catch(_){}
   });
-  if(file) mk('⬇️  Descargar imagen',()=>{
-    const a=document.createElement('a');a.download=file.name;a.href=URL.createObjectURL(file);a.click();
-  });
 
-  m.querySelector('.modal-close').onclick=()=>bg.remove();
-  bg.addEventListener('click',e=>{if(e.target===bg) bg.remove()});
+  m.querySelector('.modal-close').onclick=()=>{bg.remove();if(imgUrl)URL.revokeObjectURL(imgUrl)};
+  bg.addEventListener('click',e=>{if(e.target===bg){bg.remove();if(imgUrl)URL.revokeObjectURL(imgUrl)}});
   document.addEventListener('keydown',function esc(e){
     if(e.key==='Escape'){bg.remove();document.removeEventListener('keydown',esc)}
   });
