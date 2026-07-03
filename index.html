@@ -50,6 +50,8 @@ body{
   font-style: normal; /* Agrega esto para quitar la cursiva */
 }
 .header-meta{font-size:.72rem;color:var(--text-dim);white-space:nowrap}
+.inf-logo{height:.92em;width:auto;vertical-align:-0.12em;object-fit:contain;display:inline-block}
+.site-footer .inf-logo{height:1.15em}
 .sel-badge{
   display:none;background:rgba(212,168,67,.12);border:1px solid var(--gold);
   color:var(--gold);padding:3px 11px;border-radius:20px;font-size:.78rem;font-weight:700;white-space:nowrap;
@@ -521,7 +523,7 @@ body{
 </div>
 
 <footer class="site-footer">
-  <strong>∞</strong> &nbsp;Primavera Piojosa · Dic 2024 – Jun 2025 · <span class="pj">Los Piojos</span><br>
+  <strong><img src="assets/logos/Covers - Inéditos - Otros.png" alt="∞" class="inf-logo" onerror="this.outerHTML='∞'"></strong> &nbsp;Primavera Piojosa · Dic 2024 – Jun 2025 · <span class="pj">Los Piojos</span><br>
   <span style="margin-top:4px;display:block">Hecho con amor desde Ciudad Jardín, El Palomar</span>
 </footer>
 
@@ -617,6 +619,10 @@ const ORIGIN_CITIES=[
   ['Montevideo, Uruguay',-34.906,-56.188],
   ['Santiago de Chile',-33.459,-70.645],
 ];
+
+// Logo de la pastilla infinita (álbum "Covers - Inéditos - Otros"). Si falla la
+// imagen, cae al carácter ∞.
+const INF_LOGO='<img src="assets/logos/Covers - Inéditos - Otros.png" alt="∞" class="inf-logo" onerror="this.outerHTML=\'∞\'">';
 
 const MONTHS_S=['','ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
 const MONTHS_F=['','enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
@@ -716,14 +722,7 @@ function buildSelector(){
   document.getElementById('btn-none').onclick=()=>{sel.clear();refreshSel();renderAll(allShows)};
   document.getElementById('btn-ver').onclick=()=>document.getElementById('sel-panel').classList.remove('open');
   document.getElementById('btn-reset').onclick=()=>{sel.clear();refreshSel();renderAll(allShows)};
-  document.getElementById('btn-share').onclick=()=>{
-    const url=location.href;
-    const btn=document.getElementById('btn-share');
-    const orig=btn.textContent;
-    const done=()=>{btn.textContent='¡Copiado!';btn.style.color='var(--gold)';setTimeout(()=>{btn.textContent=orig;btn.style.color=''},2000)};
-    if(navigator.clipboard){navigator.clipboard.writeText(url).then(done).catch(done)}
-    else{const t=document.createElement('textarea');t.value=url;document.body.appendChild(t);t.select();try{document.execCommand('copy')}catch{}document.body.removeChild(t);done()}
-  };
+  document.getElementById('btn-share').onclick=()=>sharePrimavera(document.getElementById('btn-share'));
 }
 
 function toggleSel(i){
@@ -800,10 +799,10 @@ function setMode(mode){
     }
     allShows=historyShows;
     document.getElementById('header-title').innerHTML='<em>TODA LA HISTORIA</em>';
-    if(headerMeta) headerMeta.innerHTML=`1987 – ∞ · <span class="pj"><em>Los Piojos</em></span>`;
+    if(headerMeta) headerMeta.innerHTML=`1987 – ${INF_LOGO} · <span class="pj"><em>Los Piojos</em></span>`;
     document.getElementById('hero-title').innerHTML='<em>TODA<br>LA HISTORIA</em>';
     document.getElementById('hero-sub').innerHTML=
-      `1987 – ∞ · ${historyShows.length} recitales · <span class="pj"><em>Los Piojos</em></span>`;
+      `1987 – ${INF_LOGO} · ${historyShows.length} recitales · <span class="pj"><em>Los Piojos</em></span>`;
     renderAll(historyShows);
   } else {
     allShows=primaveraShows;
@@ -1475,7 +1474,14 @@ function renderTuPrimavera(recitales,d){
   sec.appendChild(card);
 
   const dlWrap=el('div','pc-dl-wrap');
-  const btn=el('button','btn-sm primary');
+  dlWrap.style.cssText='text-align:center;margin-top:16px;display:flex;gap:10px;justify-content:center;flex-wrap:wrap';
+
+  const shareBtn=el('button','btn-sm primary');
+  shareBtn.textContent='Compartir ↗';
+  shareBtn.onclick=()=>sharePrimavera(shareBtn);
+  dlWrap.appendChild(shareBtn);
+
+  const btn=el('button','btn-sm');
   btn.textContent='Descargar imagen';
   btn.onclick=()=>{
     html2canvas(document.getElementById('primavera-card'),{
@@ -1545,6 +1551,87 @@ function openSongModal(display){
     if(e.key==='Escape'){bg.remove();document.removeEventListener('keydown',esc)}
   });
   document.getElementById('song-modal-bg')?.remove();
+  document.body.appendChild(bg);
+}
+
+// ─── COMPARTIR (imagen + texto + link) ───
+async function sharePrimavera(btn){
+  const url=location.href;
+  const card=document.getElementById('primavera-card');
+  const joya=card?.querySelector('.pc-song-name')?.textContent?.trim()||'';
+  const album=card?.querySelector('.pc-score-lbl')?.textContent?.trim()||'';
+  const nRec=sel.size||currentRecitales.length;
+
+  let text=`🎸 Mi Primavera Piojosa — ${nRec} recital${nRec!==1?'es':''} de Los Piojos`;
+  if(joya && joya!=='—') text+=`\n💎 La joya que me tocó: ${joya}`;
+  if(album && album!=='—') text+=`\n💿 Mi álbum del tour: ${album}`;
+
+  // feedback visual en el botón
+  const orig=btn?btn.textContent:'';
+  if(btn){btn.textContent='Generando…';btn.disabled=true;}
+
+  // renderizar la card a imagen
+  let file=null;
+  if(card && window.html2canvas){
+    try{
+      const canvas=await html2canvas(card,{useCORS:true,scale:2,backgroundColor:'#0f0f0f'});
+      const blob=await new Promise(r=>canvas.toBlob(r,'image/png'));
+      if(blob) file=new File([blob],'mi-primavera-piojosa.png',{type:'image/png'});
+    }catch(e){}
+  }
+  if(btn){btn.textContent=orig;btn.disabled=false;}
+
+  // 1) Share nativo (ideal en mobile): imagen + texto + link a WhatsApp/Twitter/etc.
+  if(navigator.share){
+    const data={title:'Primavera Piojosa',text,url};
+    if(file && navigator.canShare && navigator.canShare({files:[file]})) data.files=[file];
+    try{ await navigator.share(data); return; }
+    catch(e){ if(e.name==='AbortError') return; }
+  }
+  // 2) Fallback (desktop): menú con destinos
+  shareFallbackMenu(text,url,file);
+}
+
+function shareFallbackMenu(text,url,file){
+  const full=text+'\n'+url;
+  const bg=el('div','show-modal-bg');bg.id='share-modal-bg';
+  const m=el('div','show-modal');m.style.maxWidth='360px';
+  m.innerHTML=`
+    <button class="modal-close">✕</button>
+    <div class="modal-header" style="margin-bottom:12px">
+      <div>
+        <div class="modal-city" style="font-size:1.4rem">Compartir</div>
+        <div class="modal-venue">Elegí a dónde</div>
+      </div>
+    </div>
+    <div class="share-opts"></div>
+    <p style="font-size:.68rem;color:var(--text-dim);margin-top:12px;line-height:1.4">
+      En redes se comparte el texto + link. Para incluir la imagen, descargala y adjuntala.
+    </p>`;
+  bg.appendChild(m);
+
+  const opts=m.querySelector('.share-opts');
+  const mk=(label,fn)=>{
+    const b=el('button','btn-sm');
+    b.style.cssText='display:block;width:100%;text-align:left;margin-bottom:8px;padding:11px 14px;font-size:.85rem';
+    b.textContent=label;b.onclick=fn;opts.appendChild(b);
+  };
+  mk('🐦  Twitter / X',()=>window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`,'_blank','noopener'));
+  mk('💬  WhatsApp',()=>window.open(`https://wa.me/?text=${encodeURIComponent(full)}`,'_blank','noopener'));
+  mk('✈️  Telegram',()=>window.open(`https://t.me/share/url?url=${encodeURIComponent(url)}&text=${encodeURIComponent(text)}`,'_blank','noopener'));
+  mk('🔗  Copiar texto y link',async(e)=>{
+    try{await navigator.clipboard.writeText(full);e.target.textContent='✓  ¡Copiado!';}catch(_){}
+  });
+  if(file) mk('⬇️  Descargar imagen',()=>{
+    const a=document.createElement('a');a.download=file.name;a.href=URL.createObjectURL(file);a.click();
+  });
+
+  m.querySelector('.modal-close').onclick=()=>bg.remove();
+  bg.addEventListener('click',e=>{if(e.target===bg) bg.remove()});
+  document.addEventListener('keydown',function esc(e){
+    if(e.key==='Escape'){bg.remove();document.removeEventListener('keydown',esc)}
+  });
+  document.getElementById('share-modal-bg')?.remove();
   document.body.appendChild(bg);
 }
 
