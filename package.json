@@ -1,0 +1,14 @@
+{
+  "name": "wrapped-share",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Netlify Functions para compartir tarjetas Wrapped con preview Open Graph (Satori + resvg-wasm).",
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "@resvg/resvg-wasm": "^2.6.2",
+    "satori": "^0.12.1"
+  }
+}

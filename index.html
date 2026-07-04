@@ -23,8 +23,7 @@
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Primavera Piojosa · Los Piojos 2024–2025">
 <meta name="twitter:description" content="Tu gira piojosa en números. Descubrí tu Primavera Piojosa.">
-<meta name="twitter:image" content="https://primavera-piojosa.netlify.app/assets/
-.jpg">
+<meta name="twitter:image" content="https://primavera-piojosa.netlify.app/assets/og-image.jpg">
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -683,6 +682,23 @@ const logoPath=t=>`assets/logos/${t}.png`;
 const fmtDate=(y,m,d)=>`${d} ${MONTHS_S[m]} ${y}`;
 const numFmt=n=>Math.round(n).toLocaleString('es-AR');
 
+// ── Compartir con preview (Open Graph) ───────────────────────────────
+// El estado viaja en la URL como JSON en base64url: /wrapped/<data> y
+// /api/og?data=<data>. Ambos los sirven las Netlify Functions.
+function encodeCard(obj){
+  const bytes=new TextEncoder().encode(JSON.stringify(obj));
+  let bin=''; for(const b of bytes) bin+=String.fromCharCode(b);
+  return btoa(bin).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
+}
+// Sólo pasa un color si es hex (si es 'var(--gold)' u otra cosa, que use el default del server)
+const hexOrNull=c=>/^#[0-9a-fA-F]{3,8}$/.test(String(c||''))?c:null;
+function wrappedUrl(){
+  return currentCardWire ? `${location.origin}/wrapped/${encodeCard(currentCardWire)}` : location.href;
+}
+function ogImageUrl(){
+  return currentCardWire ? `${location.origin}/api/og?data=${encodeCard(currentCardWire)}` : '';
+}
+
 // ─────────────────────────────────────────────
 // STATE
 // ─────────────────────────────────────────────
@@ -692,6 +708,7 @@ let MODE='primavera';              // 'primavera' | 'historia'
 let primaveraShows=[];             // los 16 shows curados de la reunión
 let historyShows=null;             // lazy-load de Setlists_Piojos.json
 let currentRecitales=[];           // dataset actualmente renderizado (para cruces canción↔shows)
+let currentCardWire=null;          // payload de la tarjeta Wrapped para compartir (base64url)
 
 // ─────────────────────────────────────────────
 // INIT
@@ -1463,6 +1480,19 @@ function renderTuPrimavera(recitales,d){
   const topAlbColor=topAlbEntry?topAlbEntry[1].alb.color:'var(--gold)';
   const topAlbCount=topAlbEntry?topAlbEntry[1].count:0;
 
+  // Payload para compartir con preview (Open Graph). Genérico: la banda/tour
+  // se pasan como valores, no van hardcodeados en las Netlify Functions.
+  const joyaSub=`${joyaAlb?joyaAlb+' · ':''}sonó ${joyaGlobal===1?'una sola vez':joyaGlobal+'×'} en toda la Primavera`;
+  currentCardWire={
+    t:'PRIMAVERA PIOJOSA',
+    b:'Los Piojos',
+    s:'Dic 2024 – Jun 2025',
+    st:[[recitales.length,'recitales'],[numFmt(totalKm),'kilómetros']],
+    j: joya ? {n:joya.display, s:joyaSub, c:hexOrNull(joyaColor)} : null,
+    a: topAlbEntry ? {n:topAlbTitle, s:`tu álbum del tour · ${topAlbCount} temas`, c:hexOrNull(topAlbColor), l:topAlbTitle} : null,
+    f:'hecho con amor desde Ciudad Jardín, El Palomar'
+  };
+
   const card=el('div','primavera-card');
   card.id='primavera-card';
   card.innerHTML=`
@@ -1503,19 +1533,39 @@ function renderTuPrimavera(recitales,d){
   shareBtn.onclick=()=>sharePrimavera(shareBtn);
   dlWrap.appendChild(shareBtn);
 
-  const btn=el('button','btn-sm');
-  btn.textContent='Descargar imagen';
-  btn.onclick=()=>{
-    html2canvas(document.getElementById('primavera-card'),{
-      useCORS:true,scale:2,backgroundColor:'#0f0f0f'
-    }).then(canvas=>{
-      const a=document.createElement('a');
-      a.download='primavera-piojosa.png';
-      a.href=canvas.toDataURL('image/png');
-      a.click();
-    });
+  // Twitter / X — link a la URL pública (/wrapped/<data>) para que el crawler
+  // arme la preview con la imagen de /api/og.
+  const twBtn=el('a','btn-sm');
+  twBtn.textContent='🐦 X';
+  twBtn.target='_blank';twBtn.rel='noopener';
+  twBtn.href='#';
+  twBtn.onclick=e=>{
+    const u=wrappedUrl();
+    const text=`🎸 Mi Primavera Piojosa — ${sel.size||currentRecitales.length} recitales de Los Piojos`;
+    twBtn.href=`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(u)}`;
   };
+  dlWrap.appendChild(twBtn);
+
+  // WhatsApp — texto + URL pública embebida
+  const waBtn=el('a','btn-sm');
+  waBtn.textContent='💬 WhatsApp';
+  waBtn.target='_blank';waBtn.rel='noopener';
+  waBtn.href='#';
+  waBtn.onclick=()=>{
+    const u=wrappedUrl();
+    const text=`🎸 Mi Primavera Piojosa — ${sel.size||currentRecitales.length} recitales de Los Piojos`;
+    waBtn.href=`https://wa.me/?text=${encodeURIComponent(text+'\n\n'+u)}`;
+  };
+  dlWrap.appendChild(waBtn);
+
+  // Descargar imagen — el mismo PNG de la preview (/api/og), así descarga == preview
+  const btn=el('a','btn-sm');
+  btn.textContent='⬇️ Descargar imagen';
+  btn.download='primavera-piojosa.png';
+  btn.href='#';
+  btn.onclick=()=>{ btn.href=ogImageUrl()||'#'; };
   dlWrap.appendChild(btn);
+
   sec.appendChild(dlWrap);
   return sec;
 }
@@ -1578,7 +1628,7 @@ function openSongModal(display){
 
 // ─── COMPARTIR (imagen + texto + link) ───
 async function sharePrimavera(btn){
-  const url=location.href;
+  const url=wrappedUrl();   // URL pública con preview OG (crawler-friendly)
   const card=document.getElementById('primavera-card');
   const joya=card?.querySelector('.pc-song-name')?.textContent?.trim()||'';
   const album=card?.querySelector('.pc-score-lbl')?.textContent?.trim()||'';
