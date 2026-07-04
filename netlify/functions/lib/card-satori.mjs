@@ -39,47 +39,47 @@ export function buildCard(card) {
       'radial-gradient(ellipse 70% 55% at 50% -8%, rgba(212,168,67,0.16) 0%, rgba(212,168,67,0) 70%)',
     color: C.text,
     fontFamily: 'Outfit',
-    padding: '54px 64px 44px',
-    justifyContent: 'space-between',
+    padding: '48px 60px 40px',
+    justifyContent: 'flex-start',
     border: `1px solid ${C.goldDim}`,
   }, [
     // ── encabezado ──────────────────────────────────────────────
     h('div', { display: 'flex', flexDirection: 'column' }, [
       h('div', {
         fontFamily: 'Los Piojos',
-        fontSize: '92px',
+        fontSize: '78px',
         color: C.gold,
         lineHeight: 1,
         letterSpacing: '0.04em',
         textShadow: '0 0 45px rgba(212,168,67,0.3)',
       }, card.title),
       h('div', {
-        fontSize: '22px',
+        fontSize: '21px',
         color: C.dim,
-        marginTop: '14px',
+        marginTop: '12px',
         letterSpacing: '0.16em',
         textTransform: 'uppercase',
       }, card.subtitle),
     ]),
 
     // línea divisoria
-    h('div', { display: 'flex', height: '1px', backgroundColor: C.border }, []),
+    h('div', { display: 'flex', height: '1px', backgroundColor: C.border, marginTop: '16px' }, []),
 
     // ── stats ───────────────────────────────────────────────────
-    h('div', { display: 'flex', gap: '80px' },
+    h('div', { display: 'flex', gap: '80px', marginTop: '18px' },
       stats.map((s) => h('div', { display: 'flex', flexDirection: 'column' }, [
         h('div', {
           fontFamily: 'Bebas Neue',
-          fontSize: '104px',
+          fontSize: '84px',
           color: C.gold,
           lineHeight: 1,
         }, String(s.num)),
         h('div', {
-          fontSize: '20px',
+          fontSize: '19px',
           color: C.dim,
           textTransform: 'uppercase',
           letterSpacing: '0.12em',
-          marginTop: '6px',
+          marginTop: '8px',
         }, s.label),
       ])),
     ),
@@ -90,8 +90,9 @@ export function buildCard(card) {
       flexDirection: 'column',
       borderLeft: `6px solid ${card.jewel.color}`,
       paddingLeft: '22px',
-      paddingTop: '6px',
-      paddingBottom: '6px',
+      paddingTop: '4px',
+      paddingBottom: '4px',
+      marginTop: '24px',
     }, [
       h('div', {
         fontSize: '18px',
@@ -100,19 +101,19 @@ export function buildCard(card) {
         letterSpacing: '0.13em',
         marginBottom: '8px',
       }, card.jewel.label),
-      h('div', { fontSize: '40px', fontWeight: 600, color: C.text, lineHeight: 1.15 }, card.jewel.name),
+      h('div', { fontSize: '34px', fontWeight: 600, color: C.text, lineHeight: 1.15 }, card.jewel.name),
       card.jewel.sub
         ? h('div', { fontSize: '19px', color: C.dim, marginTop: '8px' }, card.jewel.sub)
         : null,
     ].filter(Boolean)) : null,
 
     // ── álbum del tour ──────────────────────────────────────────
-    card.album ? h('div', { display: 'flex', alignItems: 'center', gap: '26px' }, [
-      logo ? img(logo, { width: '92px', height: '92px', objectFit: 'contain' }) : null,
+    card.album ? h('div', { display: 'flex', alignItems: 'center', gap: '24px', marginTop: '24px' }, [
+      logo ? img(logo, { width: '70px', height: '70px', objectFit: 'contain' }) : null,
       h('div', { display: 'flex', flexDirection: 'column' }, [
         h('div', {
           fontFamily: 'Los Piojos',
-          fontSize: '46px',
+          fontSize: '44px',
           color: card.album.color,
           letterSpacing: '0.03em',
           lineHeight: 1.05,
@@ -129,7 +130,7 @@ export function buildCard(card) {
       ].filter(Boolean)),
     ].filter(Boolean)) : null,
 
-    // ── footer ciudad ───────────────────────────────────────────
+    // ── footer ciudad (pegado al fondo) ─────────────────────────
     card.footer ? h('div', {
       display: 'flex',
       fontSize: '18px',
@@ -138,6 +139,7 @@ export function buildCard(card) {
       letterSpacing: '0.06em',
       borderTop: `1px solid ${C.border}`,
       paddingTop: '18px',
+      marginTop: '24px',
     }, card.footer) : null,
   ].filter(Boolean));
 }

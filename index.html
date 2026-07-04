@@ -1658,18 +1658,21 @@ async function sharePrimavera(btn){
   const file=await getCardFile();
   if(btn){btn.textContent=orig;btn.disabled=false;}
 
-  // 1) IDEAL (mobile): compartir la FOTO REAL adjunta. NO pasamos 'url' aparte
+  const isMobile=/Android|iPhone|iPad|iPod|Mobi/i.test(navigator.userAgent);
+
+  // 1) MOBILE: hoja nativa con la FOTO REAL adjunta. NO pasamos 'url' aparte
   //    para que la app no reemplace la foto por la preview de un link.
-  if(file && navigator.canShare && navigator.canShare({files:[file]})){
+  if(isMobile && file && navigator.canShare && navigator.canShare({files:[file]})){
     try{ await navigator.share({files:[file],text:caption}); return; }
     catch(e){ if(e.name==='AbortError') return; }
   }
-  // 2) Sin soporte de archivos pero con share nativo: texto + URL linda
-  if(navigator.share){
+  // 2) MOBILE sin soporte de archivos: share nativo texto + URL linda
+  if(isMobile && navigator.share){
     try{ await navigator.share({text,url:CLEAN_URL}); return; }
     catch(e){ if(e.name==='AbortError') return; }
   }
-  // 3) Desktop/fallback: bajar la imagen + menú de destinos
+  // 3) DESKTOP (o mobile sin share): nuestro menú — la hoja del SO en la compu
+  //    no tiene X y no deja adjuntar la foto a un intent web.
   shareFallbackMenu(text,CLEAN_URL,file);
 }
 
@@ -1689,11 +1692,15 @@ function shareFallbackMenu(text,url,file){
     ${imgUrl?`<img src="${imgUrl}" alt="Tu Primavera Piojosa" style="width:100%;border-radius:10px;border:1px solid var(--border);margin-bottom:14px">`:''}
     <div class="share-opts"></div>
     <p style="font-size:.72rem;color:var(--text-dim);margin-top:12px;line-height:1.45">
-      <strong style="color:var(--gold)">Cómo compartir la foto:</strong> 1) Descargá la imagen ·
-      2) abrí WhatsApp/Twitter · 3) adjuntá la imagen y pegá el texto (ya copiado).
+      <strong style="color:var(--gold)">Para postear en X con la foto:</strong> tocá
+      <em>"Copiar imagen y abrir X"</em>, y en el tweet pegala con <strong>Ctrl+V</strong>
+      (el texto ya queda puesto).
       <br>Desde el <strong>celular</strong> se comparte todo junto, automático.
     </p>`;
   bg.appendChild(m);
+
+  // ¿podemos copiar imágenes al portapapeles? (Chrome/Edge desktop sí)
+  const canCopyImg=file && typeof ClipboardItem!=='undefined' && navigator.clipboard?.write;
 
   const opts=m.querySelector('.share-opts');
   const mk=(label,primary,fn)=>{
@@ -1702,13 +1709,22 @@ function shareFallbackMenu(text,url,file){
     b.textContent=label;b.onclick=fn;opts.appendChild(b);
     return b;
   };
-  if(file) mk('⬇️  Descargar imagen + copiar texto',true,async(e)=>{
-    const a=document.createElement('a');a.download=file.name;a.href=imgUrl;a.click();
-    try{await navigator.clipboard.writeText(full);}catch(_){}
-    e.target.textContent='✓  Imagen bajada · texto copiado';
+
+  // Primaria: copiar la imagen al portapapeles y abrir X con el texto puesto.
+  if(canCopyImg) mk('🐦  Copiar imagen y abrir X',true,async(e)=>{
+    try{
+      await navigator.clipboard.write([new ClipboardItem({'image/png':file})]);
+      e.target.textContent='✓  Imagen copiada · abriendo X…';
+    }catch(_){ e.target.textContent='Abriendo X… (si no pegó, usá Descargar)'; }
+    window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`,'_blank','noopener');
+  });
+
+  if(file) mk('⬇️  Descargar imagen',!canCopyImg,(e)=>{
+    const a=document.createElement('a');a.download=file.name;a.href=imgUrl;
+    document.body.appendChild(a);a.click();a.remove();
+    e.target.textContent='✓  Imagen descargada';
   });
   mk('💬  Abrir WhatsApp (texto + link)',false,()=>window.open(`https://wa.me/?text=${encodeURIComponent(full)}`,'_blank','noopener'));
-  mk('🐦  Abrir Twitter / X (texto + link)',false,()=>window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`,'_blank','noopener'));
   mk('✈️  Abrir Telegram (texto + link)',false,()=>window.open(`https://t.me/share/url?url=${encodeURIComponent(url)}&text=${encodeURIComponent(text)}`,'_blank','noopener'));
   mk('🔗  Solo copiar texto y link',false,async(e)=>{
     try{await navigator.clipboard.writeText(full);e.target.textContent='✓  ¡Copiado!';}catch(_){}
