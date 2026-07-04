@@ -1528,42 +1528,18 @@ function renderTuPrimavera(recitales,d){
   const dlWrap=el('div','pc-dl-wrap');
   dlWrap.style.cssText='text-align:center;margin-top:16px;display:flex;gap:10px;justify-content:center;flex-wrap:wrap';
 
+  // Compartir: hoja nativa del sistema con la IMAGEN REAL adjunta (mobile).
+  // Así la foto se ve sí o sí en X/WhatsApp, sin depender de que el crawler
+  // scrapee la preview OG (poco confiable) y con la URL limpia.
   const shareBtn=el('button','btn-sm primary');
-  shareBtn.textContent='Compartir ↗';
+  shareBtn.textContent='📤 Compartir';
   shareBtn.onclick=()=>sharePrimavera(shareBtn);
   dlWrap.appendChild(shareBtn);
 
-  // Twitter / X — link a la URL pública (/wrapped/<data>) para que el crawler
-  // arme la preview con la imagen de /api/og.
-  const twBtn=el('a','btn-sm');
-  twBtn.textContent='🐦 X';
-  twBtn.target='_blank';twBtn.rel='noopener';
-  twBtn.href='#';
-  twBtn.onclick=e=>{
-    const u=wrappedUrl();
-    const text=`🎸 Mi Primavera Piojosa — ${sel.size||currentRecitales.length} recitales de Los Piojos`;
-    twBtn.href=`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(u)}`;
-  };
-  dlWrap.appendChild(twBtn);
-
-  // WhatsApp — texto + URL pública embebida
-  const waBtn=el('a','btn-sm');
-  waBtn.textContent='💬 WhatsApp';
-  waBtn.target='_blank';waBtn.rel='noopener';
-  waBtn.href='#';
-  waBtn.onclick=()=>{
-    const u=wrappedUrl();
-    const text=`🎸 Mi Primavera Piojosa — ${sel.size||currentRecitales.length} recitales de Los Piojos`;
-    waBtn.href=`https://wa.me/?text=${encodeURIComponent(text+'\n\n'+u)}`;
-  };
-  dlWrap.appendChild(waBtn);
-
-  // Descargar imagen — el mismo PNG de la preview (/api/og), así descarga == preview
-  const btn=el('a','btn-sm');
+  // Descargar imagen — baja el PNG de /api/og (mismo que la preview).
+  const btn=el('button','btn-sm');
   btn.textContent='⬇️ Descargar imagen';
-  btn.download='primavera-piojosa.png';
-  btn.href='#';
-  btn.onclick=()=>{ btn.href=ogImageUrl()||'#'; };
+  btn.onclick=()=>downloadCard(btn);
   dlWrap.appendChild(btn);
 
   sec.appendChild(dlWrap);
@@ -1627,8 +1603,46 @@ function openSongModal(display){
 }
 
 // ─── COMPARTIR (imagen + texto + link) ───
+// URL "linda" para el pie del texto (la foto va adjunta, no dependemos del OG)
+const CLEAN_URL='https://primavera-piojosa.netlify.app';
+
+// Trae el PNG 1200×630 de /api/og (idéntico a la preview). Fallback: html2canvas.
+async function getCardFile(){
+  const u=ogImageUrl();
+  if(u){
+    try{
+      const r=await fetch(u,{cache:'force-cache'});
+      if(r.ok){
+        const b=await r.blob();
+        if(b && b.size) return new File([b],'primavera-piojosa.png',{type:'image/png'});
+      }
+    }catch(_){}
+  }
+  // fallback client-side por si /api/og no está disponible
+  const card=document.getElementById('primavera-card');
+  if(card && window.html2canvas){
+    try{
+      const canvas=await html2canvas(card,{useCORS:true,scale:2,backgroundColor:'#0f0f0f'});
+      const blob=await new Promise(r=>canvas.toBlob(r,'image/png'));
+      if(blob) return new File([blob],'primavera-piojosa.png',{type:'image/png'});
+    }catch(_){}
+  }
+  return null;
+}
+
+// Descargar la imagen (robusto en mobile: blob + object URL).
+async function downloadCard(btn){
+  const orig=btn.textContent; btn.textContent='Generando…'; btn.disabled=true;
+  const file=await getCardFile();
+  btn.textContent=orig; btn.disabled=false;
+  if(!file){ alert('No se pudo generar la imagen. Probá de nuevo.'); return; }
+  const oURL=URL.createObjectURL(file);
+  const a=document.createElement('a'); a.href=oURL; a.download='primavera-piojosa.png';
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(()=>URL.revokeObjectURL(oURL),4000);
+}
+
 async function sharePrimavera(btn){
-  const url=wrappedUrl();   // URL pública con preview OG (crawler-friendly)
   const card=document.getElementById('primavera-card');
   const joya=card?.querySelector('.pc-song-name')?.textContent?.trim()||'';
   const album=card?.querySelector('.pc-score-lbl')?.textContent?.trim()||'';
@@ -1637,38 +1651,26 @@ async function sharePrimavera(btn){
   let text=`🎸 Mi Primavera Piojosa — ${nRec} recital${nRec!==1?'es':''} de Los Piojos`;
   if(joya && joya!=='—') text+=`\n💎 La joya que me tocó: ${joya}`;
   if(album && album!=='—') text+=`\n💿 Mi álbum del tour: ${album}`;
+  const caption=text+'\n\n'+CLEAN_URL;   // pie de foto: texto + URL linda
 
-  const caption=text+'\n\n'+url;   // pie de foto: texto + link
-
-  // feedback visual en el botón
   const orig=btn?btn.textContent:'';
   if(btn){btn.textContent='Generando…';btn.disabled=true;}
-
-  // renderizar la card a imagen PNG
-  let file=null;
-  if(card && window.html2canvas){
-    try{
-      const canvas=await html2canvas(card,{useCORS:true,scale:2,backgroundColor:'#0f0f0f'});
-      const blob=await new Promise(r=>canvas.toBlob(r,'image/png'));
-      if(blob) file=new File([blob],'mi-primavera-piojosa.png',{type:'image/png'});
-    }catch(e){}
-  }
+  const file=await getCardFile();
   if(btn){btn.textContent=orig;btn.disabled=false;}
 
-  // 1) IDEAL (mobile): compartir la FOTO con el texto+link en el pie.
-  //    Clave: NO pasar 'url' aparte — si no, WhatsApp/Twitter descartan la
-  //    imagen y muestran solo la preview del link.
+  // 1) IDEAL (mobile): compartir la FOTO REAL adjunta. NO pasamos 'url' aparte
+  //    para que la app no reemplace la foto por la preview de un link.
   if(file && navigator.canShare && navigator.canShare({files:[file]})){
     try{ await navigator.share({files:[file],text:caption}); return; }
     catch(e){ if(e.name==='AbortError') return; }
   }
-  // 2) Sin soporte de archivos pero con share nativo: texto + link (tarjeta OG)
+  // 2) Sin soporte de archivos pero con share nativo: texto + URL linda
   if(navigator.share){
-    try{ await navigator.share({text,url}); return; }
+    try{ await navigator.share({text,url:CLEAN_URL}); return; }
     catch(e){ if(e.name==='AbortError') return; }
   }
   // 3) Desktop/fallback: bajar la imagen + menú de destinos
-  shareFallbackMenu(text,url,file);
+  shareFallbackMenu(text,CLEAN_URL,file);
 }
 
 function shareFallbackMenu(text,url,file){
