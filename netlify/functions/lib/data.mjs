@@ -39,7 +39,7 @@ export function normalize(raw = {}) {
       label: str(Array.isArray(it) ? it[1] : it?.label) || '',
     })),
     jewel: raw.j ? {
-      label: 'la joya que te tocó',
+      label: 'la joya que me tocó',
       name:  str(raw.j.n) || '—',
       sub:   str(raw.j.s) || '',
       color: hex(raw.j.c) || GOLD,

@@ -132,7 +132,7 @@ body{
 .hero-title em{color:var(--gold);font-style:normal;font-family:'Los Piojos','Bebas Neue',sans-serif}
 .hero-sub{font-size:.88rem;color:var(--text-dim);margin-top:12px;letter-spacing:.14em;text-transform:uppercase}
 .pj{font-family:'Los Piojos','Bebas Neue',sans-serif}
-.sec-title em{color:var(--gold);font-style:normal;font-family:'Los Piojos','Bebas Neue',sans-serif}
+.sec-title em{color:var(--gold);font-style:normal}
 .hero-badge{
   display:none;background:var(--gold);color:#111;font-weight:700;font-size:.78rem;
   padding:4px 14px;border-radius:20px;margin-top:12px;
@@ -838,10 +838,10 @@ function setMode(mode){
     }
     allShows=historyShows;
     document.getElementById('header-title').innerHTML='<em>TODA LA HISTORIA</em>';
-    if(headerMeta) headerMeta.innerHTML=`1987 – ${INF_LOGO} · <span class="pj"><em>Los Piojos</em></span>`;
+    if(headerMeta) headerMeta.innerHTML=`1987 – ∞ · <span class="pj"><em>Los Piojos</em></span>`;
     document.getElementById('hero-title').innerHTML='<em>TODA<br>LA HISTORIA</em>';
     document.getElementById('hero-sub').innerHTML=
-      `1987 – ${INF_LOGO} · ${historyShows.length} recitales · <span class="pj"><em>Los Piojos</em></span>`;
+      `1987 – ∞ · ${historyShows.length} recitales · <span class="pj"><em>Los Piojos</em></span>`;
     renderAll(historyShows);
   } else {
     allShows=primaveraShows;
@@ -1090,7 +1090,7 @@ function renderGallery(recitales){
     const popPct=pop!=null?Math.round((pop-POP_MIN)/(POP_MAX-POP_MIN)*100):null;
     // colores: alternativo=azul, clásico=dorado
     const popColor=pop!=null?`hsl(${Math.round(40+popPct*0.1)},${Math.round(60+popPct*0.4)}%,${Math.round(35+popPct*0.2)}%)`:'#555';
-    const popLbl=pop==null?'':pop>=0.74?'Clásico':pop<=0.57?'Rareza':'';
+    const popLbl=pop==null?'':pop>=0.74?'Clásico':pop<=0.57?'Rareza':'Mixto';
     const popLblHtml=popLbl
       ?`<span class="show-gal-pop-lbl" style="background:${popColor}22;color:${popColor}">${popLbl}</span>`
       :'';
@@ -1484,19 +1484,19 @@ function renderTuPrimavera(recitales,d){
   // se pasan como valores, no van hardcodeados en las Netlify Functions.
   const joyaSub=`${joyaAlb?joyaAlb+' · ':''}sonó ${joyaGlobal===1?'una sola vez':joyaGlobal+'×'} en toda la Primavera`;
   currentCardWire={
-    t:'PRIMAVERA PIOJOSA',
+    t:'MI PRIMAVERA PIOJOSA',
     b:'Los Piojos',
     s:'Dic 2024 – Jun 2025',
     st:[[recitales.length,'recitales'],[numFmt(totalKm),'kilómetros']],
     j: joya ? {n:joya.display, s:joyaSub, c:hexOrNull(joyaColor)} : null,
-    a: topAlbEntry ? {n:topAlbTitle, s:`tu álbum del tour · ${topAlbCount} temas`, c:hexOrNull(topAlbColor), l:topAlbTitle} : null,
+    a: topAlbEntry ? {n:topAlbTitle, s:`mi álbum del tour · ${topAlbCount} temas`, c:hexOrNull(topAlbColor), l:topAlbTitle} : null,
     f:'hecho con amor desde Ciudad Jardín, El Palomar'
   };
 
   const card=el('div','primavera-card');
   card.id='primavera-card';
   card.innerHTML=`
-    <div class="pc-title">PRIMAVERA PIOJOSA</div>
+    <div class="pc-title">MI PRIMAVERA PIOJOSA</div>
     <div class="pc-sub"><span class="pj">Los Piojos</span> · Dic 2024 – Jun 2025</div>
     <div class="pc-divider"></div>
     <div class="pc-row">
@@ -1510,7 +1510,7 @@ function renderTuPrimavera(recitales,d){
       </div>
     </div>
     <div class="pc-song" style="border-left-color:${joyaColor}">
-      <div class="pc-song-lbl">la joya que te tocó</div>
+      <div class="pc-song-lbl">la joya que me tocó</div>
       <div class="pc-song-name">${joya?.display||'—'}</div>
       <div class="pc-song-alb">${joyaAlb?joyaAlb+' · ':''}sonó ${joyaGlobal===1?'una sola vez':joyaGlobal+'×'} en toda la Primavera</div>
     </div>
@@ -1518,7 +1518,7 @@ function renderTuPrimavera(recitales,d){
       <img src="${logoPath(topAlbTitle)}" alt="" style="width:60px;height:60px;object-fit:contain;flex-shrink:0" onerror="this.style.display='none'">
       <div>
         <div class="pc-score-lbl" style="color:${topAlbColor}">${topAlbTitle}</div>
-        <div class="pc-score-sub">tu álbum del tour · ${topAlbCount} temas</div>
+        <div class="pc-score-sub">mi álbum del tour · ${topAlbCount} temas</div>
       </div>
     </div>
     <div class="pc-footer">hecho con amor desde Ciudad Jardín, El Palomar</div>`;
