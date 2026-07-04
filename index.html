@@ -245,6 +245,17 @@ body{
   font-size:.82rem;cursor:pointer;outline:none;transition:border-color .2s;flex:1;min-width:200px;
 }
 .arranque-select:focus,.arranque-select:hover{border-color:var(--gold-dim)}
+.search-input{
+  width:100%;background:var(--bg3);border:1px solid var(--border);color:var(--text);
+  padding:12px 15px;border-radius:var(--radius);font-family:inherit;font-size:.95rem;
+  outline:none;transition:border-color .2s;
+}
+.search-input:focus{border-color:var(--gold)}
+.search-input::placeholder{color:var(--text-dim)}
+.search-results{max-height:520px;overflow-y:auto;scrollbar-width:thin;scrollbar-color:var(--gold-dim) var(--bg3)}
+.search-results::-webkit-scrollbar{width:8px}
+.search-results::-webkit-scrollbar-track{background:var(--bg3);border-radius:2px}
+.search-results::-webkit-scrollbar-thumb{background:var(--gold-dim);border-radius:2px}
 .arranque-comparison{
   margin-top:14px;font-size:.82rem;color:var(--text-dim);font-style:italic;
   padding:10px 14px;background:var(--bg3);border-radius:var(--radius);border-left:3px solid var(--gold-dim);
@@ -940,6 +951,7 @@ function renderAll(recitales){
     main.appendChild(renderStats(d,recitales));
     main.appendChild(renderShowsPerYear(recitales));
     main.appendChild(renderTop15(d));
+    main.appendChild(renderSearch(d));
     main.appendChild(renderOnce(d));
     main.appendChild(renderAlbumDist(d));
     main.appendChild(renderHistoryArchive(recitales));
@@ -955,6 +967,7 @@ function renderAll(recitales){
   main.appendChild(renderGallery(recitales));
   main.appendChild(renderArranque(recitales,d));
   main.appendChild(renderTop15(d));
+  main.appendChild(renderSearch(d));
   main.appendChild(renderAlbumDist(d));
   main.appendChild(renderPopularity(recitales));
   main.appendChild(renderTourRoute(recitales));
@@ -1233,6 +1246,67 @@ function renderTop15(d){
     });
     sec.appendChild(tags);
   }
+  return sec;
+}
+
+// ─── BUSCADOR DE CANCIONES ───
+function renderSearch(d){
+  const sec=sec_('Buscá tu canción');
+  const songs=(d.sorted||[]).filter(x=>x.count>0);
+
+  const sub=el('p');sub.style.cssText='font-size:.82rem;color:var(--text-dim);margin-bottom:12px';
+  sub.textContent=MODE==='historia'
+    ?`${songs.length} canciones distintas en la historia documentada. Buscá cualquiera y fijate en qué shows sonó.`
+    :(sel.size>0
+      ?`${songs.length} canciones en tu selección. Buscá cualquiera.`
+      :`${songs.length} canciones distintas en la gira. Buscá cualquiera y tocala para ver en qué shows sonó.`);
+  sec.appendChild(sub);
+
+  const input=el('input','search-input');
+  input.type='search';input.placeholder='Escribí el nombre de una canción…';
+  input.autocomplete='off';input.spellcheck=false;
+  sec.appendChild(input);
+
+  const list=el('div','bar-list search-results');list.style.marginTop='14px';
+  sec.appendChild(list);
+
+  const empty=el('p');empty.style.cssText='font-size:.82rem;color:var(--text-dim);margin-top:10px;display:none';
+  empty.textContent='No encontré esa canción en este recorte. Probá con otra palabra.';
+  sec.appendChild(empty);
+
+  const mx=songs.reduce((m,s)=>Math.max(m,s.count),1);
+  const CAP=50;
+  const rowHtml=item=>{
+    const color=item.alb?item.alb.color:'#555';
+    return `${item.alb?`<img class="bar-logo" src="${logoPath(item.alb.title)}" title="${item.alb.title}" onerror="this.style.display='none'">`:`<span class="bar-logo-blank"></span>`}
+      <span class="bar-name" title="${item.display}">${item.display}</span>
+      <div class="bar-track-wrap">
+        <div class="bar-track" style="background:${color};width:${Math.max(8,item.count/mx*100)}%">
+          <span class="bar-count">${item.count}×</span>
+        </div>
+      </div>`;
+  };
+
+  function render(q){
+    const nq=norm(q||'');
+    const matches=nq?songs.filter(s=>norm(s.display).includes(nq)):songs;
+    list.innerHTML='';
+    empty.style.display=matches.length?'none':'block';
+    matches.slice(0,CAP).forEach(item=>{
+      const row=el('div','bar-row clickable');
+      row.title=`Ver en qué shows sonó "${item.display}"`;
+      row.onclick=()=>openSongModal(item.display);
+      row.innerHTML=rowHtml(item);
+      list.appendChild(row);
+    });
+    if(matches.length>CAP){
+      const more=el('div');more.style.cssText='font-size:.78rem;color:var(--text-dim);margin-top:10px;text-align:center';
+      more.textContent=`+${matches.length-CAP} más — afiná la búsqueda`;
+      list.appendChild(more);
+    }
+  }
+  input.addEventListener('input',()=>render(input.value));
+  render('');
   return sec;
 }
 
