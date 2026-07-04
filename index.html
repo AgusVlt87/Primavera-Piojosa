@@ -710,6 +710,22 @@ function ogImageUrl(){
   return currentCardWire ? `${location.origin}/api/og?data=${encodeCard(currentCardWire)}` : '';
 }
 
+// Cache de la imagen de la card. Clave: en iOS, navigator.share({files}) DEBE
+// dispararse dentro del gesto del toque. Por eso pre-generamos la imagen apenas
+// se arma la card, así al tocar "Compartir" ya está lista y compartimos sin await.
+let cardImgCache={data:null,file:null,promise:null};
+function preloadCardImage(){
+  if(!currentCardWire) return;
+  const data=encodeCard(currentCardWire);
+  if(cardImgCache.data===data && (cardImgCache.file||cardImgCache.promise)) return; // ya en curso/listo
+  cardImgCache={data,file:null,promise:null};
+  cardImgCache.promise=fetch(`${location.origin}/api/og?data=${data}`,{cache:'force-cache'})
+    .then(r=>r.ok?r.blob():null)
+    .then(b=>(b&&b.size)?new File([b],'primavera-piojosa.png',{type:'image/png'}):null)
+    .then(f=>{ if(cardImgCache.data===data) cardImgCache.file=f; return f; })
+    .catch(()=>null);
+}
+
 // ─────────────────────────────────────────────
 // STATE
 // ─────────────────────────────────────────────
@@ -1566,6 +1582,7 @@ function renderTuPrimavera(recitales,d){
     a: topAlbEntry ? {n:topAlbTitle, s:`mi álbum del tour · ${topAlbCount} temas`, c:hexOrNull(topAlbColor), l:topAlbTitle} : null,
     f:'hecho con amor desde Ciudad Jardín, El Palomar'
   };
+  preloadCardImage();   // pre-genera la imagen para que Compartir en el celu sea instantáneo
 
   const card=el('div','primavera-card');
   card.id='primavera-card';
@@ -1680,16 +1697,24 @@ function openSongModal(display){
 // URL "linda" para el pie del texto (la foto va adjunta, no dependemos del OG)
 const CLEAN_URL='https://primavera-piojosa.netlify.app';
 
-// Trae el PNG 1200×630 de /api/og (idéntico a la preview). Fallback: html2canvas.
+// Devuelve el File de la card. Usa primero el cache pre-generado (preloadCardImage),
+// luego /api/og directo, y por último html2canvas.
+function cachedCardFile(){
+  if(!currentCardWire) return null;
+  return (cardImgCache.data===encodeCard(currentCardWire)) ? cardImgCache.file : null;
+}
 async function getCardFile(){
+  const hit=cachedCardFile();
+  if(hit) return hit;
+  // si el preload sigue en curso para esta misma card, esperalo
+  if(currentCardWire && cardImgCache.data===encodeCard(currentCardWire) && cardImgCache.promise){
+    const f=await cardImgCache.promise; if(f) return f;
+  }
   const u=ogImageUrl();
   if(u){
     try{
       const r=await fetch(u,{cache:'force-cache'});
-      if(r.ok){
-        const b=await r.blob();
-        if(b && b.size) return new File([b],'primavera-piojosa.png',{type:'image/png'});
-      }
+      if(r.ok){ const b=await r.blob(); if(b&&b.size) return new File([b],'primavera-piojosa.png',{type:'image/png'}); }
     }catch(_){}
   }
   // fallback client-side por si /api/og no está disponible
@@ -1727,15 +1752,23 @@ async function sharePrimavera(btn){
   if(album && album!=='—') text+=`\n💿 Mi álbum del tour: ${album}`;
   const caption=text+'\n\n'+CLEAN_URL;   // pie de foto: texto + URL linda
 
+  const isMobile=/Android|iPhone|iPad|iPod|Mobi/i.test(navigator.userAgent);
+
+  // 0) MOBILE + imagen YA cacheada: compartir SIN await para no romper el gesto
+  //    del toque (iOS exige que navigator.share salga dentro del user-gesture).
+  const ready=cachedCardFile();
+  if(isMobile && ready && navigator.canShare && navigator.canShare({files:[ready]})){
+    try{ await navigator.share({files:[ready],text:caption}); return; }
+    catch(e){ if(e.name==='AbortError') return; /* si falla, seguimos abajo */ }
+  }
+
+  // Si no estaba lista, la generamos (con feedback en el botón).
   const orig=btn?btn.textContent:'';
   if(btn){btn.textContent='Generando…';btn.disabled=true;}
   const file=await getCardFile();
   if(btn){btn.textContent=orig;btn.disabled=false;}
 
-  const isMobile=/Android|iPhone|iPad|iPod|Mobi/i.test(navigator.userAgent);
-
-  // 1) MOBILE: hoja nativa con la FOTO REAL adjunta. NO pasamos 'url' aparte
-  //    para que la app no reemplace la foto por la preview de un link.
+  // 1) MOBILE: hoja nativa con la FOTO REAL adjunta.
   if(isMobile && file && navigator.canShare && navigator.canShare({files:[file]})){
     try{ await navigator.share({files:[file],text:caption}); return; }
     catch(e){ if(e.name==='AbortError') return; }
