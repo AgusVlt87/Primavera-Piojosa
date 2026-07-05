@@ -1751,35 +1751,47 @@ async function sharePrimavera(btn){
   if(joya && joya!=='—') text+=`\n💎 La joya que me tocó: ${joya}`;
   if(album && album!=='—') text+=`\n💿 Mi álbum del tour: ${album}`;
   const caption=text+'\n\n'+CLEAN_URL;   // pie de foto: texto + URL linda
-
-  const isMobile=/Android|iPhone|iPad|iPod|Mobi/i.test(navigator.userAgent);
-
-  // 0) MOBILE + imagen YA cacheada: compartir SIN await para no romper el gesto
-  //    del toque (iOS exige que navigator.share salga dentro del user-gesture).
-  const ready=cachedCardFile();
-  if(isMobile && ready && navigator.canShare && navigator.canShare({files:[ready]})){
-    try{ await navigator.share({files:[ready],text:caption}); return; }
-    catch(e){ if(e.name==='AbortError') return; /* si falla, seguimos abajo */ }
-  }
-
-  // Si no estaba lista, la generamos (con feedback en el botón).
   const orig=btn?btn.textContent:'';
-  if(btn){btn.textContent='Generando…';btn.disabled=true;}
-  const file=await getCardFile();
-  if(btn){btn.textContent=orig;btn.disabled=false;}
 
-  // 1) MOBILE: hoja nativa con la FOTO REAL adjunta.
-  if(isMobile && file && navigator.canShare && navigator.canShare({files:[file]})){
-    try{ await navigator.share({files:[file],text:caption}); return; }
-    catch(e){ if(e.name==='AbortError') return; }
-  }
-  // 2) MOBILE sin soporte de archivos: share nativo texto + URL linda
+  const isMobile=/Android|iPhone|iPad|iPod|Mobi/i.test(navigator.userAgent)
+    || (navigator.userAgentData&&navigator.userAgentData.mobile)
+    || (navigator.maxTouchPoints>1 && matchMedia('(pointer:coarse)').matches);
+
+  // ── CELULAR: SIEMPRE la hoja nativa del sistema. Nunca el menú de escritorio.
   if(isMobile && navigator.share){
-    try{ await navigator.share({text,url:CLEAN_URL}); return; }
+    // a) imagen ya pre-generada (cache): compartir YA, sin await → gesto intacto
+    const ready=cachedCardFile();
+    if(ready && navigator.canShare && navigator.canShare({files:[ready]})){
+      try{ await navigator.share({files:[ready],text:caption}); return; }
+      catch(e){ if(e.name==='AbortError') return; }
+    }
+    // b) generar la imagen LOCAL con html2canvas (rápido, sin red → no vence el
+    //    gesto como sí lo hacía esperar /api/og en frío)
+    let file=null;
+    if(btn){btn.textContent='Generando…';btn.disabled=true;}
+    try{
+      const cardEl=document.getElementById('primavera-card');
+      if(cardEl && window.html2canvas){
+        const canvas=await html2canvas(cardEl,{useCORS:true,scale:2,backgroundColor:'#0f0f0f'});
+        const blob=await new Promise(r=>canvas.toBlob(r,'image/png'));
+        if(blob) file=new File([blob],'primavera-piojosa.png',{type:'image/png'});
+      }
+    }catch(_){}
+    if(btn){btn.textContent=orig;btn.disabled=false;}
+    if(file && navigator.canShare && navigator.canShare({files:[file]})){
+      try{ await navigator.share({files:[file],text:caption}); return; }
+      catch(e){ if(e.name==='AbortError') return; }
+    }
+    // c) último recurso EN EL CELU: compartir texto + link (igual es nativo)
+    try{ await navigator.share({text:caption}); return; }
     catch(e){ if(e.name==='AbortError') return; }
+    return; // no caemos al menú de escritorio en mobile
   }
-  // 3) DESKTOP (o mobile sin share): nuestro menú — la hoja del SO en la compu
-  //    no tiene X y no deja adjuntar la foto a un intent web.
+
+  // ── ESCRITORIO: nuestro menú (la hoja de Windows no tiene X ni adjunta foto).
+  if(btn){btn.textContent='Generando…';btn.disabled=true;}
+  const file=cachedCardFile()||await getCardFile();
+  if(btn){btn.textContent=orig;btn.disabled=false;}
   shareFallbackMenu(text,CLEAN_URL,file);
 }
 
