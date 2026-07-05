@@ -504,9 +504,48 @@ body{
   .arch-show{gap:8px;padding:9px 12px}
   .arch-show-date{flex:0 0 50px}
 }
+
+/* ── Overlay de bienvenida ── */
+.welcome-ov{position:fixed;inset:0;z-index:120;background:rgba(9,9,9,.95);backdrop-filter:blur(6px);display:flex;align-items:center;justify-content:center;padding:24px;animation:wfade .25s ease}
+@keyframes wfade{from{opacity:0}to{opacity:1}}
+.welcome-box{max-width:440px;width:100%;text-align:center}
+.welcome-logo{font-family:'Los Piojos','Bebas Neue',sans-serif;color:var(--gold);font-size:clamp(2.6rem,11vw,3.8rem);line-height:1;letter-spacing:.04em;text-shadow:0 0 40px rgba(212,168,67,.3)}
+.welcome-sub{color:var(--text-dim);font-size:.92rem;margin:12px 0 30px;line-height:1.5}
+.welcome-btns{display:flex;flex-direction:column;gap:12px}
+.welcome-btn{display:block;width:100%;padding:16px 18px;border-radius:12px;border:1px solid var(--gold-dim);background:var(--bg2);color:var(--text);font-family:inherit;font-size:1.02rem;font-weight:700;cursor:pointer;transition:.15s;text-align:center}
+.welcome-btn:hover{border-color:var(--gold);background:#1d1a0e}
+.welcome-btn.primary{background:var(--gold);color:#111;border-color:var(--gold)}
+.welcome-btn small{display:block;font-weight:400;font-size:.76rem;opacity:.85;margin-top:3px;letter-spacing:.02em}
+.welcome-link{margin-top:22px;background:none;border:none;color:var(--text-dim);font-size:.86rem;text-decoration:underline;cursor:pointer;font-family:inherit}
+.welcome-link:hover{color:var(--gold)}
+
+/* ── Selector agrupado por año ── */
+.recitales-grid{display:flex;flex-direction:column;gap:10px}
+.sel-year{border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;background:var(--bg3)}
+.sel-year-hdr{display:flex;align-items:center;gap:10px;width:100%;padding:11px 14px;background:transparent;border:none;color:var(--text);cursor:pointer;font-family:inherit;text-align:left}
+.sel-year-hdr:hover{background:rgba(255,255,255,.03)}
+.sel-year-name{font-family:'Bebas Neue',sans-serif;font-size:1.35rem;color:var(--gold);letter-spacing:.03em;flex:0 0 auto}
+.sel-year-meta{font-size:.78rem;color:var(--text-dim);flex:1}
+.sel-year-meta b{color:var(--gold)}
+.sel-year-chev{transition:transform .2s;color:var(--text-dim);font-size:.9rem}
+.sel-year.open .sel-year-chev{transform:rotate(90deg)}
+.sel-year-body{display:none;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:9px;padding:12px 14px 14px}
+.sel-year.open .sel-year-body{display:grid}
 </style>
 </head>
 <body>
+
+<div class="welcome-ov" id="welcome-ov" style="display:none">
+  <div class="welcome-box">
+    <div class="welcome-logo">PRIMAVERA<br>PIOJOSA</div>
+    <div class="welcome-sub">Tu gira piojosa en números. ¿Cómo querés arrancar?</div>
+    <div class="welcome-btns">
+      <button class="welcome-btn primary" id="wc-ver">Ver la Primavera 24–25<small>Todos los recitales de la vuelta, en números</small></button>
+      <button class="welcome-btn" id="wc-armar">Armar la mía<small>Elegí a los shows que fuiste y hacé tu tarjeta</small></button>
+    </div>
+    <button class="welcome-link" id="wc-historia">o explorá toda la historia (1987 – ∞)</button>
+  </div>
+</div>
 
 <header class="site-header">
   <div class="header-left">
@@ -751,37 +790,47 @@ async function init(){
     albumsData=INLINE_ALBUMS;
   }
   primaveraShows=allShows;
-  buildSelector();
+  wireSelectorButtons();
+  renderSelectorGrid();
   buildTimeline();
   buildModeSwitch();
   const h=location.hash;
   if(h.startsWith('#recitales=')){
-    h.slice(7).split(',').map(Number).filter(n=>n>=0&&n<allShows.length).forEach(i=>sel.add(i));
+    h.slice(h.indexOf('=')+1).split(',').map(Number).filter(n=>n>=0&&n<allShows.length).forEach(i=>sel.add(i));
     refreshSel();
     renderAll(getActive());
   } else {
     renderAll(allShows);
   }
+  initWelcome();
+}
+
+// Overlay de bienvenida: dos caminos claros (la novia tiene razón, el botón
+// "★ Mi Primavera" en la esquina es ilegible). Se saltea si venís por un link.
+function initWelcome(){
+  const ov=document.getElementById('welcome-ov');
+  if(!ov) return;
+  if(location.hash.startsWith('#recitales=')){ ov.style.display='none'; return; }
+  ov.style.display='flex';
+  const close=()=>{ ov.style.display='none'; };
+  document.getElementById('wc-ver').onclick=close;  // ver todo (ya está renderizado)
+  document.getElementById('wc-armar').onclick=()=>{
+    close();
+    const panel=document.getElementById('sel-panel');
+    panel.classList.add('open');
+    requestAnimationFrame(()=>panel.scrollIntoView({behavior:'smooth',block:'start'}));
+  };
+  document.getElementById('wc-historia').onclick=()=>{ close(); setMode('historia'); };
 }
 
 // ─────────────────────────────────────────────
 // SELECTOR
 // ─────────────────────────────────────────────
-function buildSelector(){
-  const grid=document.getElementById('recitales-grid');
-  allShows.forEach((s,i)=>{
-    const c=document.createElement('div');
-    c.className='show-card';c.dataset.i=i;
-    c.innerHTML=`<div class="show-card-date">${fmtDate(s.year,s.month,s.day)}</div>
-      <div class="show-card-venue">${VENUE_SHORT[s.venue]||s.venue}</div>
-      <div class="show-card-count">${splitSongs(s.songs).length} canciones</div>`;
-    c.onclick=()=>toggleSel(i);
-    grid.appendChild(c);
-  });
+// Botones del selector (se cablean una sola vez)
+function wireSelectorButtons(){
   document.getElementById('btn-toggle').onclick=()=>{
     const panel=document.getElementById('sel-panel');
     const opened=panel.classList.toggle('open');
-    // Al abrir, llevar el panel a la vista (si no, queda arriba fuera del viewport)
     if(opened) requestAnimationFrame(()=>panel.scrollIntoView({behavior:'smooth',block:'start'}));
   };
   document.getElementById('btn-all').onclick=()=>{allShows.forEach((_,i)=>sel.add(i));refreshSel();renderAll(getActive())};
@@ -789,6 +838,47 @@ function buildSelector(){
   document.getElementById('btn-ver').onclick=()=>document.getElementById('sel-panel').classList.remove('open');
   document.getElementById('btn-reset').onclick=()=>{sel.clear();refreshSel();renderAll(allShows)};
   document.getElementById('btn-share').onclick=()=>sharePrimavera(document.getElementById('btn-share'));
+}
+
+// Grid del selector agrupado por año y colapsable. Reconstruible por modo
+// (allShows cambia entre Primavera e Historia).
+function renderSelectorGrid(){
+  const grid=document.getElementById('recitales-grid');
+  grid.innerHTML='';
+  const byYear=new Map();
+  allShows.forEach((s,i)=>{ if(!byYear.has(s.year)) byYear.set(s.year,[]); byYear.get(s.year).push(i); });
+  const years=[...byYear.keys()].sort((a,b)=>b-a);   // más nuevo primero
+  const expandAll=years.length<=3;                    // pocos años: abiertos; muchos (historia): colapsados
+  years.forEach(year=>{
+    const idxs=byYear.get(year);
+    const yEl=el('div','sel-year'+(expandAll?' open':''));
+    const hdr=el('button','sel-year-hdr');
+    hdr.innerHTML=`<span class="sel-year-name">${year}</span>
+      <span class="sel-year-meta"><b class="sel-year-count" data-year="${year}">0</b> / ${idxs.length} show${idxs.length!==1?'s':''}</span>
+      <span class="sel-year-chev">▸</span>`;
+    hdr.onclick=()=>yEl.classList.toggle('open');
+    yEl.appendChild(hdr);
+    const body=el('div','sel-year-body');
+    idxs.forEach(i=>{
+      const s=allShows[i];
+      const c=el('div','show-card');c.dataset.i=i;
+      c.innerHTML=`<div class="show-card-date">${fmtDate(s.year,s.month,s.day)}</div>
+        <div class="show-card-venue">${VENUE_SHORT[s.venue]||s.venue}</div>
+        <div class="show-card-count">${splitSongs(s.songs).length} canciones</div>`;
+      c.onclick=()=>toggleSel(i);
+      body.appendChild(c);
+    });
+    yEl.appendChild(body);
+    grid.appendChild(yEl);
+  });
+  updateYearCounts();
+}
+
+// Actualiza el contador "X / N" de cada año según la selección
+function updateYearCounts(){
+  const cnt={};
+  sel.forEach(i=>{ const y=allShows[i]?.year; if(y!=null) cnt[y]=(cnt[y]||0)+1; });
+  document.querySelectorAll('.sel-year-count').forEach(e=>{ e.textContent=cnt[+e.dataset.year]||0; });
 }
 
 function toggleSel(i){
@@ -802,20 +892,29 @@ function getActive(){return sel.size>0?allShows.filter((_,i)=>sel.has(i)):allSho
 function refreshSel(){
   document.querySelectorAll('.show-card').forEach(c=>c.classList.toggle('selected',sel.has(+c.dataset.i)));
   document.querySelectorAll('.tl-dot').forEach(d=>d.classList.toggle('selected',sel.has(+d.dataset.i)));
+  updateYearCounts();
   const n=sel.size, on=n>0;
+  const isHist=MODE==='historia';
+  const baseTitle=isHist?'TODA LA HISTORIA':'PRIMAVERA PIOJOSA';
+  const brandTitle=isHist?'TU HISTORIA':'TU PRIMAVERA';
+  const baseSub=isHist
+    ?`1987 – ∞ · ${allShows.length} recitales · <span class="pj"><em>Los Piojos</em></span>`
+    :'Dic 2024 – Jun 2025 · 16 recitales · <span class="pj"><em>Primavera Piojosa</em></span>';
   document.getElementById('sel-badge').style.display=on?'inline':'none';
   document.getElementById('sel-badge').textContent=`${n} show${n!==1?'s':''} seleccionado${n!==1?'s':''}`;
   document.getElementById('btn-reset').style.display=on?'inline-block':'none';
-  document.getElementById('header-title').innerHTML=on?'<em>TU PRIMAVERA</em>':'<em>PRIMAVERA PIOJOSA</em>';
+  document.getElementById('header-title').innerHTML=`<em>${on?brandTitle:baseTitle}</em>`;
   const hb=document.getElementById('hero-badge');
   hb.style.display=on?'inline-block':'none';
   hb.textContent=on?`Tu selección: ${n} show${n!==1?'s':''}`:'';
   document.getElementById('hero-sub').innerHTML=on
-    ?`${n} show${n!==1?'s':''} · Tu Primavera`
-    :'Dic 2024 – Jun 2025 · 16 recitales · <span class="pj"><em>Primavera Piojosa</em></span>';
+    ?`${n} show${n!==1?'s':''} · ${isHist?'Tu Historia':'Tu Primavera'}`
+    :baseSub;
   document.getElementById('btn-share').style.display=on?'inline-block':'none';
-  const hashStr=on?`#recitales=${[...sel].sort((a,b)=>a-b).join(',')}`:'';
-  history.replaceState(null,'',location.pathname+location.search+hashStr);
+  // El hash (deep-link liviano) usa índices, que difieren entre modos: lo
+  // escribimos solo en Primavera. La tarjeta compartible real es la URL /wrapped.
+  const hashStr=(on && !isHist)?`#recitales=${[...sel].sort((a,b)=>a-b).join(',')}`:'';
+  try{ history.replaceState(null,'',location.pathname+location.search+hashStr); }catch(_){}
 }
 
 // ─────────────────────────────────────────────
@@ -852,35 +951,31 @@ function setMode(mode){
   const primControls=document.getElementById('prim-controls');
   const timelineWrap=document.querySelector('.timeline-wrap');
   const headerMeta=document.getElementById('header-meta');
+  const toggleBtn=document.getElementById('btn-toggle');
+
+  // Al cambiar de modo, la selección (índices) deja de tener sentido
+  sel.clear();
+  document.getElementById('sel-panel').classList.remove('open');
 
   if(mode==='historia'){
-    // limpiar cualquier selección personal y ocultar UI de primavera
-    sel.clear(); refreshSel();
-    document.getElementById('sel-panel').classList.remove('open');
-    if(primControls) primControls.style.display='none';
-    if(timelineWrap) timelineWrap.style.display='none';
-
-    if(!historyShows){
-      historyShows=(window.HISTORY_SHOWS||[]).slice();
-    }
+    if(!historyShows) historyShows=(window.HISTORY_SHOWS||[]).slice();
     allShows=historyShows;
-    document.getElementById('header-title').innerHTML='<em>TODA LA HISTORIA</em>';
+    if(timelineWrap) timelineWrap.style.display='none';   // demasiados shows para el timeline
+    if(primControls) primControls.style.display='';        // ahora también se puede personalizar acá
+    if(toggleBtn) toggleBtn.textContent='★ Mi selección';
     if(headerMeta) headerMeta.innerHTML=`1987 – ∞ · <span class="pj"><em>Los Piojos</em></span>`;
     document.getElementById('hero-title').innerHTML='<em>TODA<br>LA HISTORIA</em>';
-    document.getElementById('hero-sub').innerHTML=
-      `1987 – ∞ · ${historyShows.length} recitales · <span class="pj"><em>Los Piojos</em></span>`;
-    renderAll(historyShows);
   } else {
     allShows=primaveraShows;
-    if(primControls) primControls.style.display='';
     if(timelineWrap) timelineWrap.style.display='';
-    document.getElementById('header-title').innerHTML='<em>PRIMAVERA PIOJOSA</em>';
+    if(primControls) primControls.style.display='';
+    if(toggleBtn) toggleBtn.textContent='★ Mi Primavera';
     if(headerMeta) headerMeta.innerHTML='Dic 2024 – Jun 2025 · <span class="pj"><em>Los Piojos</em></span>';
     document.getElementById('hero-title').innerHTML='<em>PRIMAVERA<br>PIOJOSA</em>';
-    document.getElementById('hero-sub').innerHTML=
-      'Dic 2024 – Jun 2025 · 16 recitales · <span class="pj"><em>Los Piojos</em></span>';
-    renderAll(primaveraShows);
   }
+  renderSelectorGrid();   // reconstruye el selector agrupado por año para el modo actual
+  refreshSel();           // header-title / hero-sub / badges acorde al modo (sel vacío)
+  renderAll(allShows);
   window.scrollTo({top:0,behavior:'smooth'});
 }
 
@@ -962,23 +1057,27 @@ function renderAll(recitales){
   [...main.children].forEach(c=>{if(c.id!=='loader') c.remove()});
   currentRecitales=recitales;
   const d=compute(recitales);
+  const personalized=sel.size>0;
+
+  // Con selección: banner + tarjeta ARRIBA de todo (evita el scroll largo)
+  if(personalized){
+    const b=el('div','mode-banner');
+    b.innerHTML=`Mostrando <strong>${MODE==='historia'?'Tu Historia':'Tu Primavera'}</strong> — ${sel.size} show${sel.size!==1?'s':''} seleccionado${sel.size!==1?'s':''}`;
+    main.appendChild(b);
+    main.appendChild(renderTuPrimavera(recitales,d));
+  }
 
   if(MODE==='historia'){
     main.appendChild(renderStats(d,recitales));
     main.appendChild(renderShowsPerYear(recitales));
     main.appendChild(renderTop15(d));
     main.appendChild(renderSearch(d));
-    main.appendChild(renderOnce(d));
     main.appendChild(renderAlbumDist(d));
+    if(!personalized) main.appendChild(renderOnce(d));
     main.appendChild(renderHistoryArchive(recitales));
     return;
   }
 
-  if(sel.size>0){
-    const b=el('div','mode-banner');
-    b.innerHTML=`Mostrando <strong>Tu Primavera</strong> — ${sel.size} show${sel.size!==1?'s':''} seleccionado${sel.size!==1?'s':''}`;
-    main.appendChild(b);
-  }
   main.appendChild(renderStats(d,recitales));
   main.appendChild(renderGallery(recitales));
   main.appendChild(renderArranque(recitales,d));
@@ -988,12 +1087,11 @@ function renderAll(recitales){
   main.appendChild(renderPopularity(recitales));
   main.appendChild(renderTourRoute(recitales));
   // "una sola vez" y "no sonaron" solo tienen sentido sobre toda la gira,
-  // no dentro de una selección personal (ver punto 3): se ocultan con selección
-  if(sel.size===0){
+  // no dentro de una selección personal: se ocultan con selección
+  if(!personalized){
     main.appendChild(renderOnce(d));
     main.appendChild(renderNever(d));
   }
-  if(sel.size>0) main.appendChild(renderTuPrimavera(recitales,d));
 }
 
 function el(tag,cls){const e=document.createElement(tag);if(cls)e.className=cls;return e}
@@ -1540,7 +1638,11 @@ function renderTourRoute(shows){
 
 // ─── TU PRIMAVERA CARD ───
 function renderTuPrimavera(recitales,d){
-  const sec=sec_('Tu <em>Primavera Piojosa</em>');
+  const isHist=MODE==='historia';
+  const CARD_TITLE=isHist?'MI HISTORIA PIOJOSA':'MI PRIMAVERA PIOJOSA';
+  const CARD_SUB=isHist?'1987 – hoy':'Dic 2024 – Jun 2025';
+  const SCOPE=isHist?'en toda la historia':'en toda la Primavera';
+  const sec=sec_(isHist?'Tu <em>Historia Piojosa</em>':'Tu <em>Primavera Piojosa</em>');
   const pad=n=>String(n).padStart(2,'0');
 
   // Km desde origen actual
@@ -1549,10 +1651,10 @@ function renderTuPrimavera(recitales,d){
     const co=VENUE_COORDS[s.venue];return co?sum+haversine([lat,lng],co):sum;
   },0));
 
-  // La joya que te tocó: la canción más rara (a nivel de toda la gira) que
-  // sonó en TUS shows. Así cada selección da una carta distinta.
+  // La joya que me tocó: la canción más rara (a nivel de todo el recorte del
+  // modo) que sonó en TUS shows. Así cada selección da una carta distinta.
   const globalCount=new Map();
-  primaveraShows.forEach(sh=>splitSongs(sh.songs).forEach(raw=>{
+  allShows.forEach(sh=>splitSongs(sh.songs).forEach(raw=>{
     const k=norm(raw);globalCount.set(k,(globalCount.get(k)||0)+1);
   }));
   let joya=null,joyaGlobal=Infinity;
@@ -1572,11 +1674,11 @@ function renderTuPrimavera(recitales,d){
 
   // Payload para compartir con preview (Open Graph). Genérico: la banda/tour
   // se pasan como valores, no van hardcodeados en las Netlify Functions.
-  const joyaSub=`${joyaAlb?joyaAlb+' · ':''}sonó ${joyaGlobal===1?'una sola vez':joyaGlobal+'×'} en toda la Primavera`;
+  const joyaSub=`${joyaAlb?joyaAlb+' · ':''}sonó ${joyaGlobal===1?'una sola vez':joyaGlobal+'×'} ${SCOPE}`;
   currentCardWire={
-    t:'MI PRIMAVERA PIOJOSA',
+    t:CARD_TITLE,
     b:'Los Piojos',
-    s:'Dic 2024 – Jun 2025',
+    s:CARD_SUB,
     st:[[recitales.length,'recitales'],[numFmt(totalKm),'kilómetros']],
     j: joya ? {n:joya.display, s:joyaSub, c:hexOrNull(joyaColor)} : null,
     a: topAlbEntry ? {n:topAlbTitle, s:`mi álbum del tour · ${topAlbCount} temas`, c:hexOrNull(topAlbColor), l:topAlbTitle} : null,
@@ -1587,8 +1689,8 @@ function renderTuPrimavera(recitales,d){
   const card=el('div','primavera-card');
   card.id='primavera-card';
   card.innerHTML=`
-    <div class="pc-title">MI PRIMAVERA PIOJOSA</div>
-    <div class="pc-sub"><span class="pj">Los Piojos</span> · Dic 2024 – Jun 2025</div>
+    <div class="pc-title">${CARD_TITLE}</div>
+    <div class="pc-sub"><span class="pj">Los Piojos</span> · ${CARD_SUB}</div>
     <div class="pc-divider"></div>
     <div class="pc-row">
       <div class="pc-stat">
@@ -1603,7 +1705,7 @@ function renderTuPrimavera(recitales,d){
     <div class="pc-song" style="border-left-color:${joyaColor}">
       <div class="pc-song-lbl">la joya que me tocó</div>
       <div class="pc-song-name">${joya?.display||'—'}</div>
-      <div class="pc-song-alb">${joyaAlb?joyaAlb+' · ':''}sonó ${joyaGlobal===1?'una sola vez':joyaGlobal+'×'} en toda la Primavera</div>
+      <div class="pc-song-alb">${joyaAlb?joyaAlb+' · ':''}sonó ${joyaGlobal===1?'una sola vez':joyaGlobal+'×'} ${SCOPE}</div>
     </div>
     <div class="pc-score-wrap">
       <img src="${logoPath(topAlbTitle)}" alt="" style="width:60px;height:60px;object-fit:contain;flex-shrink:0" onerror="this.style.display='none'">
