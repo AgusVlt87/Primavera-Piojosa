@@ -1,5 +1,8 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": null,
+  "buildCommand": null,
+  "outputDirectory": ".",
   "functions": {
     "api/og.js": { "includeFiles": "api/_lib/**", "maxDuration": 30 },
     "api/wrapped.js": { "includeFiles": "api/_lib/**" }
