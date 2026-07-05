@@ -1796,8 +1796,9 @@ function openSongModal(display){
 }
 
 // ─── COMPARTIR (imagen + texto + link) ───
-// URL "linda" para el pie del texto (la foto va adjunta, no dependemos del OG)
-const CLEAN_URL='https://primavera-piojosa.netlify.app';
+// URL "linda" para el pie del texto (la foto va adjunta, no dependemos del OG).
+// Usamos el dominio actual, así funciona en cualquier deploy (Vercel, custom, etc.)
+const CLEAN_URL=location.origin;
 
 // Devuelve el File de la card. Usa primero el cache pre-generado (preloadCardImage),
 // luego /api/og directo, y por último html2canvas.

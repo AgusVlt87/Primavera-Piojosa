@@ -1,0 +1,10 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "functions": {
+    "api/og.js": { "includeFiles": "api/_lib/**", "maxDuration": 30 },
+    "api/wrapped.js": { "includeFiles": "api/_lib/**" }
+  },
+  "rewrites": [
+    { "source": "/wrapped/:data", "destination": "/api/wrapped?data=:data" }
+  ]
+}

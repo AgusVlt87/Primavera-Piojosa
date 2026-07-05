@@ -1,28 +1,22 @@
 // /wrapped/<base64url>  →  HTML con meta Open Graph dinámicos + la tarjeta
-// renderizada (lo que ve un humano) + botones para compartir.
-import { decode, normalize } from './lib/data.mjs';
-import { cardCss, cardMarkup, esc } from './lib/card-html.mjs';
+// renderizada + botones para compartir. (Vercel Function, runtime Node.)
+// El rewrite de vercel.json manda /wrapped/:data → /api/wrapped?data=:data
+import { decode, normalize } from './_lib/data.mjs';
+import { cardCss, cardMarkup, esc } from './_lib/card-html.mjs';
 
-const FALLBACK_HOST = 'primavera-piojosa.netlify.app';
-
-export const handler = async (event) => {
-  // El <data> puede venir en el path (rewrite) o como ?data=
-  let data = '';
-  const m = (event.path || '').match(/\/wrapped\/([^/?#]+)/);
-  if (m) data = m[1];
-  if (!data) data = event.queryStringParameters?.data || '';
+export default async function handler(req, res) {
+  const data = req.query?.data || '';
 
   let card;
   try {
     card = normalize(decode(data));
   } catch {
-    return { statusCode: 404, headers: { 'Content-Type': 'text/html; charset=utf-8' },
-      body: '<!doctype html><meta charset="utf-8"><p>Tarjeta no encontrada.</p><p><a href="/">Volver al inicio</a></p>' };
+    res.setHeader('Content-Type', 'text/html; charset=utf-8');
+    return res.status(404).send('<!doctype html><meta charset="utf-8"><p>Tarjeta no encontrada.</p><p><a href="/">Volver al inicio</a></p>');
   }
 
-  const h = event.headers || {};
-  const host = h['x-forwarded-host'] || h.host || FALLBACK_HOST;
-  const proto = (h['x-forwarded-proto'] || 'https').split(',')[0].trim();
+  const host = req.headers['x-forwarded-host'] || req.headers.host;
+  const proto = (req.headers['x-forwarded-proto'] || 'https').split(',')[0].trim();
   const origin = `${proto}://${host}`;
   const dataEnc = encodeURIComponent(data);
   const pageUrl = `${origin}/wrapped/${dataEnc}`;
@@ -35,7 +29,6 @@ export const handler = async (event) => {
   if (card.album && card.album.name !== '—') descParts.push(`💿 ${card.album.name}`);
   const description = descParts.join(' · ') || card.subtitle;
 
-  // texto para compartir (el link va aparte en Twitter, embebido en WhatsApp)
   const shareText = `${card.title} — ${description}`;
   const twitterHref = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(pageUrl)}`;
   const whatsappHref = `https://wa.me/?text=${encodeURIComponent(shareText + '\n\n' + pageUrl)}`;
@@ -77,13 +70,7 @@ export const handler = async (event) => {
 </body>
 </html>`;
 
-  return {
-    statusCode: 200,
-    headers: {
-      'Content-Type': 'text/html; charset=utf-8',
-      // la página es determinística para un mismo data
-      'Cache-Control': 'public, max-age=3600',
-    },
-    body: html,
-  };
-};
+  res.setHeader('Content-Type', 'text/html; charset=utf-8');
+  res.setHeader('Cache-Control', 'public, max-age=3600');
+  res.status(200).send(html);
+}

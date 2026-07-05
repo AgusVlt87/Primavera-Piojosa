@@ -1,0 +1,13 @@
+# Scripts y data de análisis — NO son parte del sitio. Excluirlos evita que
+# Vercel autodetecte un proyecto Python (por requirements.txt / *.py).
+*.py
+requirements.txt
+*.xlsx
+setlists_populares.md
+vertopal.com_popularidad.md
+identidad.md
+cosas_para-hacer.md
+index copy.html
+Setlists_Piojos.json
+Los Piojos 2024-2029.json
+shows.json
