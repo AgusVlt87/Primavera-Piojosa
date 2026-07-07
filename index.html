@@ -461,6 +461,23 @@ body{
 }
 .site-footer strong{color:var(--gold)}
 
+/* ── Tira de logos de álbumes ── */
+.logo-strip{
+  display:flex;align-items:center;gap:26px;overflow-x:auto;
+  justify-content:safe center;padding:14px 18px;scrollbar-width:none;
+}
+.logo-strip::-webkit-scrollbar{display:none}
+.logo-strip img{
+  height:34px;width:auto;flex:0 0 auto;object-fit:contain;
+  opacity:.5;transition:opacity .2s, transform .2s;
+}
+.logo-strip img:hover{opacity:1;transform:translateY(-2px)}
+.logo-strip.hero-strip{
+  border-top:1px solid var(--border);border-bottom:1px solid var(--border);
+  background:rgba(0,0,0,.2);margin-bottom:4px;
+}
+@media(max-width:700px){ .logo-strip{gap:20px;padding:12px 14px} .logo-strip img{height:30px} }
+
 @media(max-width:700px){
   .site-header{padding:9px 14px;gap:8px}
   .header-title{font-size:1.45rem}
@@ -536,10 +553,10 @@ body{
 <div class="welcome-ov" id="welcome-ov" style="display:none">
   <div class="welcome-box">
     <div class="welcome-logo">PRIMAVERA<br>PIOJOSA</div>
-    <div class="welcome-sub">Tu Primavera Piojosa en números. ¿Por dónde arrancás?</div>
+    <div class="welcome-sub">Dónde vas a parar hoy? Elegí una opción</div>
     <div class="welcome-btns">
-      <button class="welcome-btn primary" id="wc-ver">Ver toda la Primavera 24–25<small>Los números de la vuelta, sin vueltas</small></button>
-      <button class="welcome-btn" id="wc-armar">Armar la mía<small>Marcá los shows que fuiste y llevate tu tarjeta</small></button>
+      <button class="welcome-btn primary" id="wc-ver">Ver la Primavera 24–25 completa<small>Los números de la vuelta, sin vueltas</small></button>
+      <button class="welcome-btn" id="wc-armar">Personalizar (Piojos Wrapped)<small>Marcá los recitales a los que fuiste y llevate tu tarjeta para compartir!</small></button>
     </div>
     <button class="welcome-link" id="wc-historia">o metete en toda la historia (1987 – ∞)</button>
   </div>
@@ -583,6 +600,8 @@ body{
   <div class="hero-badge" id="hero-badge"></div>
 </div>
 
+<div class="logo-strip hero-strip" id="logo-strip-hero" aria-hidden="true"></div>
+
 <div class="timeline-wrap">
   <div class="timeline" id="timeline"></div>
 </div>
@@ -592,8 +611,8 @@ body{
 </div>
 
 <footer class="site-footer">
-  <strong><img src="assets/logos/Covers - Inéditos - Otros.png" alt="∞" class="inf-logo" onerror="this.outerHTML='∞'"></strong> &nbsp;Primavera Piojosa · Dic 2024 – Jun 2025 · <span class="pj">Los Piojos</span><br>
-  <span style="margin-top:4px;display:block">Hecho con amor desde Ciudad Jardín, El Palomar</span>
+  <div class="logo-strip" id="logo-strip-footer" aria-hidden="true"></div>
+  <span style="margin-top:12px;display:block">Hecho con amor desde Ciudad Jardín, El Palomar - Sin objetivos de infringir los derechos de autor.</span>
 </footer>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
@@ -693,6 +712,13 @@ const ORIGIN_CITIES=[
 // imagen, cae al carácter ∞.
 const INF_LOGO='<img src="assets/logos/Covers - Inéditos - Otros.png" alt="∞" class="inf-logo" onerror="this.outerHTML=\'∞\'">';
 
+// Logos de álbumes en orden discográfico, para las tiras (hero + footer)
+const ALBUM_LOGOS=['Chac Tu Chac','Ay Ay Ay','Tercer Arco','Azul','Verde Paisaje del Infierno','Maquina de Sangre','Civilizacion','Pioja','Covers - Inéditos - Otros'];
+function fillLogoStrips(){
+  const html=ALBUM_LOGOS.map(n=>`<img src="assets/logos/${n}.png" alt="${n}" title="${n}" loading="lazy" onerror="this.style.display='none'">`).join('');
+  document.querySelectorAll('.logo-strip').forEach(el=>{el.innerHTML=html;});
+}
+
 const MONTHS_S=['','ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
 const MONTHS_F=['','enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
 
@@ -788,6 +814,7 @@ async function init(){
     albumsData=INLINE_ALBUMS;
   }
   primaveraShows=allShows;
+  fillLogoStrips();
   wireSelectorButtons();
   renderSelectorGrid();
   buildTimeline();
@@ -1690,7 +1717,7 @@ function renderTuPrimavera(recitales,d){
     st:[[recitales.length,'recitales'],[numFmt(totalKm),'kilómetros']],
     j: joya ? {n:joya.display, s:joyaSub, c:hexOrNull(joyaColor)} : null,
     a: topAlbEntry ? {n:topAlbTitle, s:`mi álbum del tour · ${topAlbCount} temas`, c:hexOrNull(topAlbColor), l:topAlbTitle} : null,
-    f:'hecho con amor desde Ciudad Jardín, El Palomar'
+    f:'hecho con amor desde Ciudad Jardín, El Palomar - Sin objetivos de infringir los derechos de autor. '
   };
   preloadCardImage();   // pre-genera la imagen para que Compartir en el celu sea instantáneo
 
@@ -1722,7 +1749,7 @@ function renderTuPrimavera(recitales,d){
         <div class="pc-score-sub">mi álbum del tour · ${topAlbCount} temas</div>
       </div>
     </div>
-    <div class="pc-footer">hecho con amor desde Ciudad Jardín, El Palomar</div>`;
+    <div class="pc-footer">hecho con amor desde Ciudad Jardín, El Palomar - Sin objetivos de infringir los derechos de autor. </div>`;
 
   sec.appendChild(card);
 
