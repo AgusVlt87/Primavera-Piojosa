@@ -713,7 +713,9 @@ const ORIGIN_CITIES=[
 const INF_LOGO='<img src="assets/logos/Covers - Inéditos - Otros.png" alt="∞" class="inf-logo" onerror="this.outerHTML=\'∞\'">';
 
 // Logos de álbumes en orden discográfico, para las tiras (hero + footer)
-const ALBUM_LOGOS=['Chac Tu Chac','Ay Ay Ay','Tercer Arco','Azul','Verde Paisaje del Infierno','Maquina de Sangre','Civilizacion','Pioja','Covers - Inéditos - Otros'];
+const ALBUM_LOGOS=['Chac Tu Chac','Ay Ay Ay','Tercer Arco','Azul','Verde Paisaje del Infierno','Ritual','Maquina de Sangre','Pioja1','Pioja2','Civilizacion','Pioja','Covers - Inéditos - Otros'];
+
+// Reducimos la separación entre 
 function fillLogoStrips(){
   const html=ALBUM_LOGOS.map(n=>`<img src="assets/logos/${n}.png" alt="${n}" title="${n}" loading="lazy" onerror="this.style.display='none'">`).join('');
   document.querySelectorAll('.logo-strip').forEach(el=>{el.innerHTML=html;});
