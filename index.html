@@ -215,7 +215,7 @@ body{
 .show-gal-date{font-size:.78rem;color:#c9a227;font-weight:600;margin-top:7px}
 .show-gal-songs{font-size:.65rem;color:rgba(255,255,255,.3);margin-top:3px}
 .show-gal-pop-bar{position:absolute;bottom:0;left:0;height:3px;z-index:3;transition:width .4s ease;opacity:.75}
-.show-gal-pop-lbl{display:inline-block;font-size:.56rem;letter-spacing:.07em;text-transform:uppercase;margin-top:5px;padding:1px 5px;border-radius:3px}
+.show-gal-pop-lbl{display:inline-block;white-space:nowrap;font-size:.56rem;letter-spacing:.07em;text-transform:uppercase;margin-top:5px;padding:1px 5px;border-radius:3px}
 
 /* ── ARRANQUE ── */
 .arranque-card{
@@ -538,12 +538,12 @@ body{
 <div class="welcome-ov" id="welcome-ov" style="display:none">
   <div class="welcome-box">
     <div class="welcome-logo">PRIMAVERA<br>PIOJOSA</div>
-    <div class="welcome-sub">Tu gira piojosa en números. ¿Cómo querés arrancar?</div>
+    <div class="welcome-sub">Tu Primavera Piojosa en números. ¿Por dónde arrancás?</div>
     <div class="welcome-btns">
-      <button class="welcome-btn primary" id="wc-ver">Ver la Primavera 24–25<small>Todos los recitales de la vuelta, en números</small></button>
-      <button class="welcome-btn" id="wc-armar">Armar la mía<small>Elegí a los shows que fuiste y hacé tu tarjeta</small></button>
+      <button class="welcome-btn primary" id="wc-ver">Ver toda la Primavera 24–25<small>Los números de la vuelta, sin vueltas</small></button>
+      <button class="welcome-btn" id="wc-armar">Armar la mía<small>Marcá los shows que fuiste y llevate tu tarjeta</small></button>
     </div>
-    <button class="welcome-link" id="wc-historia">o explorá toda la historia (1987 – ∞)</button>
+    <button class="welcome-link" id="wc-historia">o metete en toda la historia (1987 – ∞)</button>
   </div>
 </div>
 
@@ -569,11 +569,11 @@ body{
 <div class="sel-panel" id="sel-panel">
   <div class="sel-inner">
     <div class="sel-title">¿A cuáles fuiste?</div>
-    <div class="sel-sub">Seleccioná los recitales — el dashboard se actualiza en tiempo real.</div>
+    <div class="sel-sub">Marcá los shows que estuviste — todo se recalcula al toque, en vivo.</div>
     <div class="sel-actions">
-      <button class="btn-sm" id="btn-all">Seleccionar todos</button>
-      <button class="btn-sm" id="btn-none">Deseleccionar todos</button>
-      <button class="btn-sm primary" id="btn-ver">Ver mi primavera →</button>
+      <button class="btn-sm" id="btn-all">Marcar todos</button>
+      <button class="btn-sm" id="btn-none">Limpiar</button>
+      <button class="btn-sm primary" id="btn-ver">Ver lo mío →</button>
     </div>
     <div class="recitales-grid" id="recitales-grid"></div>
   </div>
@@ -847,10 +847,14 @@ function renderSelectorGrid(){
   grid.innerHTML='';
   const byYear=new Map();
   allShows.forEach((s,i)=>{ if(!byYear.has(s.year)) byYear.set(s.year,[]); byYear.get(s.year).push(i); });
-  const years=[...byYear.keys()].sort((a,b)=>b-a);   // más nuevo primero
+  // Primavera: cronológico (2024 antes que 2025). Historia: del más nuevo al
+  // más viejo (más práctico con tantos años).
+  const asc=MODE!=='historia';
+  const years=[...byYear.keys()].sort((a,b)=>asc?a-b:b-a);
   const expandAll=years.length<=3;                    // pocos años: abiertos; muchos (historia): colapsados
   years.forEach(year=>{
-    const idxs=byYear.get(year);
+    const idxs=byYear.get(year).slice()
+      .sort((a,b)=>(allShows[a].month-allShows[b].month)||(allShows[a].day-allShows[b].day)); // por fecha
     const yEl=el('div','sel-year'+(expandAll?' open':''));
     const hdr=el('button','sel-year-hdr');
     hdr.innerHTML=`<span class="sel-year-name">${year}</span>
@@ -1062,7 +1066,7 @@ function renderAll(recitales){
   // Con selección: banner + tarjeta ARRIBA de todo (evita el scroll largo)
   if(personalized){
     const b=el('div','mode-banner');
-    b.innerHTML=`Mostrando <strong>${MODE==='historia'?'Tu Historia':'Tu Primavera'}</strong> — ${sel.size} show${sel.size!==1?'s':''} seleccionado${sel.size!==1?'s':''}`;
+    b.innerHTML=`Armaste <strong>${MODE==='historia'?'tu Historia Piojosa':'tu Primavera'}</strong> con ${sel.size} show${sel.size!==1?'s':''}. Esto es lo tuyo 👇`;
     main.appendChild(b);
     main.appendChild(renderTuPrimavera(recitales,d));
   }
@@ -1217,7 +1221,7 @@ function renderGallery(recitales){
     const popPct=pop!=null?Math.round((pop-POP_MIN)/(POP_MAX-POP_MIN)*100):null;
     // colores: alternativo=azul, clásico=dorado
     const popColor=pop!=null?`hsl(${Math.round(40+popPct*0.1)},${Math.round(60+popPct*0.4)}%,${Math.round(35+popPct*0.2)}%)`:'#555';
-    const popLbl=pop==null?'':pop>=0.74?'Clásico':pop<=0.57?'Rareza':'Mixto';
+    const popLbl=pop==null?'':pop>=0.74?'Setlist clásico':pop<=0.57?'Setlist con rarezas':'Setlist variado';
     const popLblHtml=popLbl
       ?`<span class="show-gal-pop-lbl" style="background:${popColor}22;color:${popColor}">${popLbl}</span>`
       :'';
@@ -1370,10 +1374,10 @@ function renderSearch(d){
 
   const sub=el('p');sub.style.cssText='font-size:.82rem;color:var(--text-dim);margin-bottom:12px';
   sub.textContent=MODE==='historia'
-    ?`${songs.length} canciones distintas en la historia documentada. Buscá cualquiera y fijate en qué shows sonó.`
+    ?`${songs.length} temas distintos en toda la historia documentada. Buscá el que quieras y fijate en qué noches sonó.`
     :(sel.size>0
-      ?`${songs.length} canciones en tu selección. Buscá cualquiera.`
-      :`${songs.length} canciones distintas en la gira. Buscá cualquiera y tocala para ver en qué shows sonó.`);
+      ?`${songs.length} temas en lo que elegiste. Buscá el que quieras.`
+      :`${songs.length} temas distintos en la vuelta. Buscá el que quieras y tocalo para ver en qué shows sonó.`);
   sec.appendChild(sub);
 
   const input=el('input','search-input');
@@ -1487,12 +1491,15 @@ function renderPopularity(shows){
     return {
       label:`${VENUE_SHORT[s.venue]||s.venue} · ${s.day} ${MONTHS_S[s.month]}`,
       pop,pct,cat,
-      lbl:cat==='clasico'?'clásico':cat==='rareza'?'rareza':'mixto'
+      lbl:cat==='clasico'?'clásico':cat==='rareza'?'con rarezas':'variado'
     };
   }).filter(x=>x.pct!=null);
 
   // Ordenado de más clásico a más rareza (mayor a menor)
   items.sort((a,b)=>b.pct-a.pct);
+
+  // Alto dinámico: una fila por show. Así en el celu no se aplasta todo.
+  box.style.height=Math.max(240,items.length*30+56)+'px';
 
   const CAT={clasico:'#d4a843',mixto:'#7a6e58',rareza:'#4a78aa'};
   const colors=items.map(x=>CAT[x.cat]||'#555');
@@ -1519,7 +1526,8 @@ function renderPopularity(shows){
         ]
       },
       options:{
-        indexAxis:'y',responsive:true,
+        indexAxis:'y',responsive:true,maintainAspectRatio:false,
+        layout:{padding:{right:6}},
         plugins:{
           legend:{display:false},
           tooltip:{
@@ -1536,7 +1544,9 @@ function renderPopularity(shows){
             grid:{color:'#1a1a1a'}
           },
           y:{
-            ticks:{color:'#c0b89a',font:{size:11,weight:'500'}},
+            ticks:{color:'#c0b89a',font:{size:10,weight:'500'},autoSkip:false,
+              crossAlign:'far',
+              callback(v){const l=this.getLabelForValue(v);return l.length>22?l.slice(0,21)+'…':l;}},
             grid:{color:'#1a1a1a'}
           }
         }
@@ -2015,7 +2025,7 @@ function openShowModal(s,globalIdx){
   const num=pad(globalIdx+1);
 
   const popPct=pop!=null?Math.round((pop-POP_MIN)/(POP_MAX-POP_MIN)*100):null;
-  const popLbl=pop==null?'':pop>=0.74?'setlist clásico':pop<=0.57?'setlist rareza':'setlist mixto';
+  const popLbl=pop==null?'':pop>=0.74?'setlist clásico':pop<=0.57?'setlist con rarezas':'setlist variado';
   const popHtml=pop!=null?`
     <div class="modal-pop">
       <div class="modal-pop-bar"><div class="modal-pop-fill" style="width:${popPct}%"></div></div>
