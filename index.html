@@ -524,7 +524,7 @@ body{
 }
 
 /* ── Overlay de bienvenida ── */
-.welcome-ov{position:fixed;inset:0;z-index:300;background:#0c0c0c;background-image:radial-gradient(ellipse 90% 55% at 50% 0%,rgba(212,168,67,.10) 0%,transparent 70%);display:flex;align-items:center;justify-content:center;padding:24px;animation:wfade .25s ease}
+.welcome-ov{position:fixed;inset:0;z-index:400;background:#0c0c0c;background-image:radial-gradient(ellipse 90% 55% at 50% 0%,rgba(212,168,67,.10) 0%,transparent 70%);display:flex;align-items:center;justify-content:center;padding:24px;animation:wfade .25s ease}
 @keyframes wfade{from{opacity:0}to{opacity:1}}
 .welcome-box{max-width:440px;width:100%;text-align:center}
 .welcome-logo{font-family:'Los Piojos','Bebas Neue',sans-serif;color:var(--gold);font-size:clamp(2.6rem,11vw,3.8rem);line-height:1;letter-spacing:.04em;text-shadow:0 0 40px rgba(212,168,67,.3)}
@@ -549,6 +549,47 @@ body{
 .sel-year.open .sel-year-chev{transform:rotate(90deg)}
 .sel-year-body{display:none;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:9px;padding:12px 14px 14px}
 .sel-year.open .sel-year-body{display:grid}
+
+/* ── BARRA DE NAVEGACIÓN INFERIOR (solo mobile <768px) ── */
+.dock{display:none}
+@media(max-width:767px){
+  /* Header: solo branding. Se esconde al bajar y reaparece al subir. */
+  .site-header .mode-switch,
+  .site-header .btn-toggle{display:none!important}
+  .site-header .prim-controls::before{display:none}
+  .site-header{transition:transform .28s ease;will-change:transform}
+  .site-header.hdr-hidden{transform:translateY(-100%)}
+
+  /* El contenido deja lugar para que la barra no tape nada */
+  body{padding-bottom:calc(122px + env(safe-area-inset-bottom))}
+
+  .dock{
+    display:flex;flex-direction:column;gap:6px;
+    position:fixed;left:0;right:0;bottom:0;z-index:300;
+    background:rgba(10,10,10,.96);backdrop-filter:blur(16px);
+    border-top:1px solid var(--border);
+    box-shadow:0 -4px 12px rgba(0,0,0,.5);
+    padding:6px 12px calc(6px + env(safe-area-inset-bottom));
+  }
+  /* a) Tabs (segmented control) */
+  .dock-tabs{display:flex;gap:8px}
+  .dock-tabs button{
+    flex:1;display:flex;align-items:center;justify-content:center;text-align:center;
+    background:transparent;border:1px solid var(--border);color:#a8a196;
+    border-radius:12px;padding:9px 8px;min-height:46px;cursor:pointer;line-height:1;
+    font-family:'Bebas Neue',sans-serif;font-size:1.15rem;letter-spacing:.04em;transition:.15s;
+  }
+  .dock-tabs button.active{background:var(--gold);color:#111;border-color:var(--gold)}
+  /* b) CTA principal — el elemento más prominente */
+  .dock-cta{
+    width:100%;min-height:52px;border:none;border-radius:12px;cursor:pointer;padding:12px;
+    background:var(--gold);color:#111;font-weight:700;
+    font-family:'Bebas Neue',sans-serif;font-size:1.5rem;letter-spacing:.05em;
+    box-shadow:0 4px 20px rgba(212,168,67,.28);transition:transform .12s;
+  }
+  .dock-cta:active{transform:scale(.99)}
+}
+@media(prefers-reduced-motion:reduce){.dock-cta,.site-header{transition:none}}
 </style>
 </head>
 <body>
@@ -579,7 +620,7 @@ body{
       <span class="sel-badge" id="sel-badge"></span>
       <button class="btn-reset" id="btn-reset">Ver todo</button>
       <button class="btn-share" id="btn-share">Compartir →</button>
-      <button class="btn-toggle" id="btn-toggle">★ Mi Primavera</button>
+      <button class="btn-toggle" id="btn-toggle">Mi Primavera</button>
     </div>
   </div>
 </header>
@@ -617,6 +658,14 @@ body{
   <div class="logo-strip" id="logo-strip-footer" aria-hidden="true"></div>
   <span style="margin-top:12px;display:block">Hecho con amor desde Ciudad Jardín, El Palomar - Sin objetivos de infringir los derechos de autor.</span>
 </footer>
+
+<nav class="dock" id="dock" aria-label="Navegación">
+  <div class="dock-tabs" id="dock-tabs" role="tablist" aria-label="Sección">
+    <button data-mode="primavera" class="active" role="tab" aria-selected="true">Primavera 24–25</button>
+    <button data-mode="historia" role="tab" aria-selected="false">Mirá toda la historia piojosa</button>
+  </div>
+  <button class="dock-cta" id="dock-cta">Armá tu wrapped piojoso</button>
+</nav>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
@@ -686,7 +735,7 @@ const SHOW_POPULARITY = {
 
 // Cities for "Arranqué" section
 const ORIGIN_CITIES=[
-  ['Ciudad Jardín, El Palomar (cuna piojosa) ★',-34.583,-58.556],
+  ['Ciudad Jardín, El Palomar (cuna piojosa)',-34.583,-58.556],
   ['Buenos Aires (CABA)',-34.603,-58.382],
   ['La Plata, Bs As',-34.921,-57.954],
   ['Mar del Plata, Bs As',-38.000,-57.563],
@@ -716,7 +765,7 @@ const ORIGIN_CITIES=[
 const INF_LOGO='<img src="assets/logos/Covers - Inéditos - Otros.png" alt="∞" class="inf-logo" onerror="this.outerHTML=\'∞\'">';
 
 // Logos de álbumes en orden discográfico, para las tiras (hero + footer)
-const ALBUM_LOGOS=['Chac Tu Chac','Ay Ay Ay','Tercer Arco','Azul','Verde Paisaje del Infierno','Ritual','Maquina de Sangre','Pioja1','Pioja2','Civilizacion','Pioja','Covers - Inéditos - Otros'];
+const ALBUM_LOGOS=['Chac Tu Chac','Ay Ay Ay','Tercer Arco','Azul','Ritual','Verde Paisaje del Infierno','Maquina de Sangre','Pioja1','Pioja2','Civilizacion','Pioja','Covers - Inéditos - Otros'];
 
 // Reducimos la separación entre 
 function fillLogoStrips(){
@@ -824,6 +873,7 @@ async function init(){
   renderSelectorGrid();
   buildTimeline();
   buildModeSwitch();
+  setupHideOnScroll();
   const h=location.hash;
   if(h.startsWith('#recitales=')){
     h.slice(h.indexOf('=')+1).split(',').map(Number).filter(n=>n>=0&&n<allShows.length).forEach(i=>sel.add(i));
@@ -970,16 +1020,37 @@ function buildTimeline(){
 // MODE SWITCH (Primavera 24-25 ↔ Toda la historia)
 // ─────────────────────────────────────────────
 function buildModeSwitch(){
-  document.querySelectorAll('#mode-switch button').forEach(b=>{
+  document.querySelectorAll('#mode-switch button, #dock-tabs button').forEach(b=>{
     b.onclick=()=>setMode(b.dataset.mode);
   });
+  // El CTA de la barra inferior abre el mismo panel que "Mi Primavera"
+  const dc=document.getElementById('dock-cta');
+  if(dc) dc.onclick=()=>document.getElementById('btn-toggle').click();
+}
+
+// Header hide-on-scroll (solo mobile): al bajar se esconde, al subir vuelve.
+function setupHideOnScroll(){
+  const hdr=document.querySelector('.site-header');
+  if(!hdr) return;
+  let lastY=window.scrollY||0, ticking=false;
+  function update(){
+    ticking=false;
+    const y=window.scrollY||0;
+    if(window.innerWidth>=768){ hdr.classList.remove('hdr-hidden'); lastY=y; return; }
+    if(y>lastY && y>80) hdr.classList.add('hdr-hidden');   // scrolleando hacia abajo
+    else hdr.classList.remove('hdr-hidden');               // hacia arriba (o arriba de todo)
+    lastY=y;
+  }
+  window.addEventListener('scroll',()=>{ if(!ticking){ ticking=true; requestAnimationFrame(update); } },{passive:true});
 }
 
 function setMode(mode){
   if(mode===MODE) return;
   MODE=mode;
-  document.querySelectorAll('#mode-switch button').forEach(b=>{
-    b.classList.toggle('active',b.dataset.mode===mode);
+  document.querySelectorAll('#mode-switch button, #dock-tabs button').forEach(b=>{
+    const on=b.dataset.mode===mode;
+    b.classList.toggle('active',on);
+    if(b.getAttribute('role')==='tab') b.setAttribute('aria-selected',on?'true':'false');
   });
 
   const primControls=document.getElementById('prim-controls');
@@ -996,14 +1067,14 @@ function setMode(mode){
     allShows=historyShows;
     if(timelineWrap) timelineWrap.style.display='none';   // demasiados shows para el timeline
     if(primControls) primControls.style.display='';        // ahora también se puede personalizar acá
-    if(toggleBtn) toggleBtn.textContent='★ Mi selección';
+    if(toggleBtn) toggleBtn.textContent='Mi selección';
     if(headerMeta) headerMeta.innerHTML=`1987 – ∞ · <span class="pj"><em>Los Piojos</em></span>`;
     document.getElementById('hero-title').innerHTML='<em>TODA<br>LA HISTORIA</em>';
   } else {
     allShows=primaveraShows;
     if(timelineWrap) timelineWrap.style.display='';
     if(primControls) primControls.style.display='';
-    if(toggleBtn) toggleBtn.textContent='★ Mi Primavera';
+    if(toggleBtn) toggleBtn.textContent='Mi Primavera';
     if(headerMeta) headerMeta.innerHTML='Dic 2024 – Jun 2025 · <span class="pj"><em>Los Piojos</em></span>';
     document.getElementById('hero-title').innerHTML='<em>PRIMAVERA<br>PIOJOSA</em>';
   }
@@ -1096,7 +1167,7 @@ function renderAll(recitales){
   // Con selección: banner + tarjeta ARRIBA de todo (evita el scroll largo)
   if(personalized){
     const b=el('div','mode-banner');
-    b.innerHTML=`Armaste <strong>${MODE==='historia'?'tu Historia Piojosa':'tu Primavera'}</strong> con ${sel.size} show${sel.size!==1?'s':''}. Esto es lo tuyo 👇`;
+    b.innerHTML=`Armaste <strong>${MODE==='historia'?'tu Historia Piojosa':'tu Primavera'}</strong> con ${sel.size} show${sel.size!==1?'s':''}. Este es el tuyo!`;
     main.appendChild(b);
     main.appendChild(renderTuPrimavera(recitales,d));
   }
@@ -1754,7 +1825,7 @@ function renderTuPrimavera(recitales,d){
         <div class="pc-score-sub">mi álbum del tour · ${topAlbCount} temas</div>
       </div>
     </div>
-    <div class="pc-footer">hecho con amor desde Ciudad Jardín, El Palomar - Sin objetivos de infringir los derechos de autor. </div>`;
+    <div class="pc-footer">hecho con amor desde Ciudad Jardín, El Palomar</div>`;
 
   sec.appendChild(card);
 
@@ -1765,13 +1836,13 @@ function renderTuPrimavera(recitales,d){
   // Así la foto se ve sí o sí en X/WhatsApp, sin depender de que el crawler
   // scrapee la preview OG (poco confiable) y con la URL limpia.
   const shareBtn=el('button','btn-sm primary');
-  shareBtn.textContent='📤 Compartir';
+  shareBtn.textContent='Compartir';
   shareBtn.onclick=()=>sharePrimavera(shareBtn);
   dlWrap.appendChild(shareBtn);
 
   // Descargar imagen — baja el PNG de /api/og (mismo que la preview).
   const btn=el('button','btn-sm');
-  btn.textContent='⬇️ Descargar imagen';
+  btn.textContent='Descargar imagen';
   btn.onclick=()=>downloadCard(btn);
   dlWrap.appendChild(btn);
 
@@ -1890,9 +1961,9 @@ async function sharePrimavera(btn){
   const album=card?.querySelector('.pc-score-lbl')?.textContent?.trim()||'';
   const nRec=sel.size||currentRecitales.length;
 
-  let text=`🎸 Mi Primavera Piojosa: ${nRec} recital${nRec!==1?'es':''} de Los Piojos`;
-  if(joya && joya!=='—') text+=`\n💎 La joya que me tocó: ${joya}`;
-  if(album && album!=='—') text+=`\n💿 Mi álbum del tour: ${album}`;
+  let text=`Mi Primavera Piojosa: ${nRec} recital${nRec!==1?'es':''} de Los Piojos`;
+  if(joya && joya!=='—') text+=`\nLa joya que me tocó: ${joya}`;
+  if(album && album!=='—') text+=`\nMi álbum del tour: ${album}`;
   const caption=text+'\n\n'+CLEAN_URL;   // pie de foto: texto + URL linda
   const orig=btn?btn.textContent:'';
 
@@ -1973,7 +2044,7 @@ function shareFallbackMenu(text,url,file){
   };
 
   // Primaria: copiar la imagen al portapapeles y abrir X con el texto puesto.
-  if(canCopyImg) mk('🐦  Copiar imagen y abrir X',true,async(e)=>{
+  if(canCopyImg) mk('Copiar imagen y abrir X',true,async(e)=>{
     try{
       await navigator.clipboard.write([new ClipboardItem({'image/png':file})]);
       e.target.textContent='✓  Imagen copiada · abriendo X…';
@@ -1981,14 +2052,14 @@ function shareFallbackMenu(text,url,file){
     window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`,'_blank','noopener');
   });
 
-  if(file) mk('⬇️  Descargar imagen',!canCopyImg,(e)=>{
+  if(file) mk('Descargar imagen',!canCopyImg,(e)=>{
     const a=document.createElement('a');a.download=file.name;a.href=imgUrl;
     document.body.appendChild(a);a.click();a.remove();
     e.target.textContent='✓  Imagen descargada';
   });
-  mk('💬  Abrir WhatsApp (texto + link)',false,()=>window.open(`https://wa.me/?text=${encodeURIComponent(full)}`,'_blank','noopener'));
-  mk('✈️  Abrir Telegram (texto + link)',false,()=>window.open(`https://t.me/share/url?url=${encodeURIComponent(url)}&text=${encodeURIComponent(text)}`,'_blank','noopener'));
-  mk('🔗  Solo copiar texto y link',false,async(e)=>{
+  mk('Abrir WhatsApp (texto + link)',false,()=>window.open(`https://wa.me/?text=${encodeURIComponent(full)}`,'_blank','noopener'));
+  mk('Abrir Telegram (texto + link)',false,()=>window.open(`https://t.me/share/url?url=${encodeURIComponent(url)}&text=${encodeURIComponent(text)}`,'_blank','noopener'));
+  mk('Solo copiar texto y link',false,async(e)=>{
     try{await navigator.clipboard.writeText(full);e.target.textContent='✓  ¡Copiado!';}catch(_){}
   });
 
